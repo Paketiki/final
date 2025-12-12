@@ -145,8 +145,28 @@ def delete_review(review_id: int) -> bool:
     conn.close()
     return True
 
-# Ratings
+# Ratings - Calculate from reviews
+def get_rating_stats(movie_id: int) -> Dict:
+    """Получаем статистику рейтинга из оценок рецензий"""
+    conn = get_db()
+    cursor = conn.cursor()
+    # считаем средние и количество оценок из рецензий
+    cursor.execute(
+        "SELECT COUNT(*) as count, AVG(rating) as average FROM reviews WHERE movie_id = ? AND rating IS NOT NULL",
+        (movie_id,)
+    )
+    result = cursor.fetchone()
+    conn.close()
+    
+    if result and result['count'] > 0:
+        return {
+            "count": result['count'],
+            "average": round(float(result['average']), 1)
+        }
+    return {"count": 0, "average": None}
+
 def create_or_update_rating(movie_id: int, user_id: int, value: float) -> Dict:
+    """Legacy function - kept for compatibility"""
     conn = get_db()
     cursor = conn.cursor()
     
@@ -183,15 +203,6 @@ def get_movie_ratings(movie_id: int) -> List[Dict]:
     ratings = cursor.fetchall()
     conn.close()
     return dicts_from_rows(ratings)
-
-def get_rating_stats(movie_id: int) -> Dict:
-    ratings = get_movie_ratings(movie_id)
-    if not ratings:
-        return {"count": 0, "average": None}
-    
-    values = [r['value'] for r in ratings]
-    avg = sum(values) / len(values)
-    return {"count": len(values), "average": round(avg, 1)}
 
 # Favorites
 def add_favorite(movie_id: int, user_id: int) -> Dict:
