@@ -38,6 +38,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Include routers FIRST (before static files)
+app.include_router(router_users)
+app.include_router(router_movies)
+
 # Get the correct path for static files
 STATIC_DIR = Path(__file__).parent / "static"
 
@@ -51,17 +55,6 @@ else:
 @app.get('/')
 async def root():
     return RedirectResponse(url="/static/index.html", status_code=status.HTTP_303_SEE_OTHER)
-
-# Serve index.html for all routes (SPA)
-@app.get('/{full_path:path}')
-async def serve_spa(full_path: str):
-    if full_path.startswith('api/'):
-        return {"detail": "Not Found"}
-    return FileResponse(str(STATIC_DIR / 'index.html'))
-
-# Include routers
-app.include_router(router_users)
-app.include_router(router_movies)
 
 if __name__ == "__main__":
     import uvicorn
