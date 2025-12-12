@@ -152,7 +152,7 @@ function renderGenres() {
   getGenres().forEach(g => {
     const btn = document.createElement('button');
     btn.className = 'kv-genre-btn' + (g === currentGenre ? ' kv-genre-btn-active' : '');
-    btn.textContent = g === 'all' ? 'Все' : g;
+    btn.textContent = g === 'all' ? 'Все жанры' : g;
     btn.onclick = () => {
       currentGenre = g;
       renderGenres();
@@ -207,13 +207,14 @@ function renderFilms() {
       <div class="kv-film-body">
         <h3 class="kv-film-title">${title}</h3>
         <div class="kv-film-meta">
-          <span>${genre}</span>
-          <span>•</span>
           <span>${year}</span>
+          <span>•</span>
+          <span>${genre}</span>
         </div>
         <div class="kv-film-rating-line" id="rating-${m.id}">
           <span class="kv-film-no-rating">Загрузка...</span>
         </div>
+        <div class="kv-film-stats" id="stats-${m.id}"></div>
       </div>
     `;
     
@@ -223,32 +224,38 @@ function renderFilms() {
     };
     cont.appendChild(card);
     
-    // Load rating async
-    loadMovieRatingForCard(m.id);
+    // Load rating and reviews async
+    loadMovieStatsForCard(m.id);
   });
 }
 
-async function loadMovieRatingForCard(mid) {
+async function loadMovieStatsForCard(mid) {
   try {
-    const rating = await apiCall('GET', `/movies/${mid}/rating-stats`);
-    const reviews = await apiCall('GET', `/movies/${mid}/reviews`);
-    const el = $(`#rating-${mid}`);
-    if (!el) return;
+    const [rating, reviews] = await Promise.all([
+      apiCall('GET', `/movies/${mid}/rating-stats`),
+      apiCall('GET', `/movies/${mid}/reviews`)
+    ]);
     
+    const ratingEl = $(`#rating-${mid}`);
+    const statsEl = $(`#stats-${mid}`);
+    if (!ratingEl || !statsEl) return;
+    
+    // Rating
     if (rating.average && rating.count > 0) {
-      el.innerHTML = `
-        <span class="kv-film-rating">${rating.average.toFixed(1)} ★</span>
+      ratingEl.innerHTML = `
+        <span class="kv-film-rating">${rating.average.toFixed(1)}</span>
         <span class="kv-film-rating-count">(${rating.count})</span>
       `;
     } else {
-      el.innerHTML = '<span class="kv-film-no-rating">Нет оценок</span>';
+      ratingEl.innerHTML = '<span class="kv-film-no-rating">Нет оценок</span>';
     }
     
+    // Reviews count
     if (reviews.length > 0) {
-      el.innerHTML += ` • <span class="kv-film-stats">${reviews.length} рец.</span>`;
+      statsEl.innerHTML = `Рецензий: ${reviews.length}`;
     }
   } catch (e) {
-    console.error('Rating load error:', e);
+    console.error('Stats load error:', e);
   }
 }
 
@@ -281,9 +288,9 @@ async function openMovie(mid) {
           <div class="kv-movie-modal-right">
             <h2>${title}</h2>
             <div class="kv-movie-meta">
-              <span>${genre}</span>
-              <span>•</span>
               <span>${year}</span>
+              <span>•</span>
+              <span>${genre}</span>
             </div>
             <p class="kv-movie-desc">${desc}</p>
             <div class="kv-movie-rating-block">
