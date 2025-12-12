@@ -1,268 +1,151 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, func
-from app.database import async_session_maker
-from app.movies.models import Movie, Review, Rating, Favorite
-from app.movies.schemas import MovieCreate, MovieResponse, ReviewCreate, ReviewResponse, RatingCreate, RatingResponse
-from typing import List, Optional
+from fastapi import APIRouter, HTTPException, Query
+from pydantic import BaseModel
+from typing import Optional, List
+from app import db
 
 router = APIRouter(prefix="/api/movies", tags=["movies"])
 
+class MovieCreate(BaseModel):
+    title: str
+    description: Optional[str] = None
+    genre: str
+    year: int
+    poster_url: Optional[str] = None
 
-async def get_db() -> AsyncSession:
-    async with async_session_maker() as session:
-        yield session
+class ReviewCreate(BaseModel):
+    text: str
+    rating: Optional[int] = None
 
+class RatingCreate(BaseModel):
+    value: float
 
 # ========== MOVIES ==========
 
-@router.get("/", response_model=List[MovieResponse])
-async def get_movies(
-    genre: Optional[str] = Query(None),
-    sort: str = Query("popular"),
-    db: AsyncSession = Depends(get_db)
-):
+@router.get("/")
+def get_movies(genre: Optional[str] = Query(None), sort: str = Query("popular")):
     """Get all movies with optional filtering and sorting"""
-    query = select(Movie)
-
+    movies = db.get_all_movies()
+    
     if genre and genre != "all":
-        query = query.where(Movie.genre == genre)
-
+        movies = [m for m in movies if m['genre'] == genre]
+    
     if sort == "title":
-        query = query.order_by(Movie.title)
+        movies = sorted(movies, key=lambda x: x['title'])
     elif sort == "year":
-        query = query.order_by(Movie.year.desc())
+        movies = sorted(movies, key=lambda x: x['year'], reverse=True)
     elif sort == "rating":
-        # Will need to join with ratings and calculate average
-        query = query.order_by(Movie.id)  # Placeholder
-    else:  # popular
-        query = query.order_by(Movie.id.desc())
+        # Sort by rating (would need to fetch ratings for each)
+        pass
+    # Default is popular (by id desc, already done)
+    
+    return movies
 
-    result = await db.execute(query)
-    return result.scalars().all()
-
-
-@router.get("/{movie_id}", response_model=MovieResponse)
-async def get_movie(movie_id: int, db: AsyncSession = Depends(get_db)):
+@router.get("/{movie_id}")
+def get_movie(movie_id: int):
     """Get a single movie by ID"""
-    stmt = select(Movie).where(Movie.id == movie_id)
-    result = await db.execute(stmt)
-    movie = result.scalar_one_or_none()
-
+    movie = db.get_movie_by_id(movie_id)
+    
     if not movie:
         raise HTTPException(status_code=404, detail="Movie not found")
-
+    
     return movie
 
-
-@router.post("/", response_model=MovieResponse)
-async def create_movie(data: MovieCreate, db: AsyncSession = Depends(get_db)):
+@router.post("/")
+def create_movie(data: MovieCreate):
     """Create a new movie (admin only)"""
-    new_movie = Movie(
+    movie = db.create_movie(
         title=data.title,
         description=data.description,
         genre=data.genre,
         year=data.year,
         poster_url=data.poster_url
     )
-    db.add(new_movie)
-    await db.commit()
-    await db.refresh(new_movie)
-    return new_movie
-
+    return movie
 
 # ========== REVIEWS ==========
 
-@router.post("/{movie_id}/reviews", response_model=ReviewResponse)
-async def create_review(
-    movie_id: int,
-    data: ReviewCreate,
-    user_id: int,
-    db: AsyncSession = Depends(get_db)
-):
+@router.post("/{movie_id}/reviews")
+def create_review(movie_id: int, data: ReviewCreate, user_id: int):
     """Create a review for a movie"""
     # Check if movie exists
-    stmt = select(Movie).where(Movie.id == movie_id)
-    result = await db.execute(stmt)
-    if not result.scalar_one_or_none():
+    movie = db.get_movie_by_id(movie_id)
+    if not movie:
         raise HTTPException(status_code=404, detail="Movie not found")
-
-    new_review = Review(
+    
+    review = db.create_review(
         movie_id=movie_id,
         user_id=user_id,
         text=data.text,
-        rating=data.rating,
-        approved=False
+        rating=data.rating
     )
-    db.add(new_review)
-    await db.commit()
-    await db.refresh(new_review)
-    return new_review
+    return review
 
-
-@router.get("/{movie_id}/reviews", response_model=List[ReviewResponse])
-async def get_reviews(
-    movie_id: int,
-    approved_only: bool = Query(True),
-    db: AsyncSession = Depends(get_db)
-):
+@router.get("/{movie_id}/reviews")
+def get_reviews(movie_id: int, approved_only: bool = Query(True)):
     """Get reviews for a movie"""
-    query = select(Review).where(Review.movie_id == movie_id)
-
-    if approved_only:
-        query = query.where(Review.approved == True)
-
-    query = query.order_by(Review.created_at.desc())
-    result = await db.execute(query)
-    return result.scalars().all()
-
+    reviews = db.get_movie_reviews(movie_id, approved_only=approved_only)
+    return reviews
 
 @router.put("/reviews/{review_id}/approve")
-async def approve_review(review_id: int, db: AsyncSession = Depends(get_db)):
+def approve_review(review_id: int):
     """Approve a review (moderator only)"""
-    stmt = select(Review).where(Review.id == review_id)
-    result = await db.execute(stmt)
-    review = result.scalar_one_or_none()
-
-    if not review:
-        raise HTTPException(status_code=404, detail="Review not found")
-
-    review.approved = True
-    await db.commit()
+    db.approve_review(review_id)
     return {"status": "approved"}
 
-
 @router.delete("/reviews/{review_id}")
-async def delete_review(review_id: int, db: AsyncSession = Depends(get_db)):
+def delete_review(review_id: int):
     """Delete a review"""
-    stmt = select(Review).where(Review.id == review_id)
-    result = await db.execute(stmt)
-    review = result.scalar_one_or_none()
-
-    if not review:
-        raise HTTPException(status_code=404, detail="Review not found")
-
-    await db.delete(review)
-    await db.commit()
+    db.delete_review(review_id)
     return {"status": "deleted"}
-
 
 # ========== RATINGS ==========
 
-@router.post("/{movie_id}/ratings", response_model=RatingResponse)
-async def create_rating(
-    movie_id: int,
-    data: RatingCreate,
-    user_id: int,
-    db: AsyncSession = Depends(get_db)
-):
+@router.post("/{movie_id}/ratings")
+def create_rating(movie_id: int, data: RatingCreate, user_id: int):
     """Create or update a rating for a movie"""
     # Check if movie exists
-    stmt = select(Movie).where(Movie.id == movie_id)
-    result = await db.execute(stmt)
-    if not result.scalar_one_or_none():
+    movie = db.get_movie_by_id(movie_id)
+    if not movie:
         raise HTTPException(status_code=404, detail="Movie not found")
-
-    # Check if rating already exists
-    stmt = select(Rating).where(
-        and_(Rating.movie_id == movie_id, Rating.user_id == user_id)
-    )
-    result = await db.execute(stmt)
-    existing_rating = result.scalar_one_or_none()
-
-    if existing_rating:
-        existing_rating.value = data.value
-        await db.commit()
-        await db.refresh(existing_rating)
-        return existing_rating
-
-    new_rating = Rating(
+    
+    rating = db.create_or_update_rating(
         movie_id=movie_id,
         user_id=user_id,
         value=data.value
     )
-    db.add(new_rating)
-    await db.commit()
-    await db.refresh(new_rating)
-    return new_rating
-
+    return rating
 
 @router.get("/{movie_id}/rating-stats")
-async def get_rating_stats(movie_id: int, db: AsyncSession = Depends(get_db)):
+def get_rating_stats(movie_id: int):
     """Get rating statistics for a movie"""
-    stmt = select(
-        func.count(Rating.id).label("count"),
-        func.avg(Rating.value).label("average")
-    ).where(Rating.movie_id == movie_id)
-
-    result = await db.execute(stmt)
-    row = result.first()
-
-    return {
-        "count": row[0] or 0,
-        "average": round(float(row[1]), 1) if row[1] else None
-    }
-
+    stats = db.get_rating_stats(movie_id)
+    return stats
 
 # ========== FAVORITES ==========
 
 @router.post("/{movie_id}/favorites")
-async def add_to_favorites(
-    movie_id: int,
-    user_id: int,
-    db: AsyncSession = Depends(get_db)
-):
+def add_to_favorites(movie_id: int, user_id: int):
     """Add a movie to favorites"""
     # Check if movie exists
-    stmt = select(Movie).where(Movie.id == movie_id)
-    result = await db.execute(stmt)
-    if not result.scalar_one_or_none():
+    movie = db.get_movie_by_id(movie_id)
+    if not movie:
         raise HTTPException(status_code=404, detail="Movie not found")
-
-    # Check if already in favorites
-    stmt = select(Favorite).where(
-        and_(Favorite.movie_id == movie_id, Favorite.user_id == user_id)
-    )
-    result = await db.execute(stmt)
-    if result.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="Already in favorites")
-
-    new_favorite = Favorite(
-        movie_id=movie_id,
-        user_id=user_id
-    )
-    db.add(new_favorite)
-    await db.commit()
-    return {"status": "added to favorites"}
-
+    
+    result = db.add_favorite(movie_id, user_id)
+    
+    if "error" in result:
+        raise HTTPException(status_code=400, detail=result["error"])
+    
+    return result
 
 @router.delete("/{movie_id}/favorites")
-async def remove_from_favorites(
-    movie_id: int,
-    user_id: int,
-    db: AsyncSession = Depends(get_db)
-):
+def remove_from_favorites(movie_id: int, user_id: int):
     """Remove a movie from favorites"""
-    stmt = select(Favorite).where(
-        and_(Favorite.movie_id == movie_id, Favorite.user_id == user_id)
-    )
-    result = await db.execute(stmt)
-    favorite = result.scalar_one_or_none()
+    result = db.remove_favorite(movie_id, user_id)
+    return result
 
-    if not favorite:
-        raise HTTPException(status_code=404, detail="Not in favorites")
-
-    await db.delete(favorite)
-    await db.commit()
-    return {"status": "removed from favorites"}
-
-
-@router.get("/user/{user_id}/favorites", response_model=List[MovieResponse])
-async def get_user_favorites(
-    user_id: int,
-    db: AsyncSession = Depends(get_db)
-):
+@router.get("/user/{user_id}/favorites")
+def get_user_favorites(user_id: int):
     """Get user's favorite movies"""
-    stmt = select(Movie).join(Favorite).where(Favorite.user_id == user_id)
-    result = await db.execute(stmt)
-    return result.scalars().all()
+    favorites = db.get_user_favorites(user_id)
+    return favorites
