@@ -17,7 +17,7 @@
 ## Технологии
 
 - **Backend**: FastAPI
-- **Database**: PostgreSQL + SQLAlchemy ORM
+- **Database**: SQLite + SQLAlchemy ORM (async)
 - **Database Migrations**: Alembic
 - **Frontend**: Vanilla JavaScript
 - **Styling**: CSS
@@ -27,7 +27,6 @@
 ### Предположения
 
 - Python 3.8+
-- PostgreSQL 12+
 - pip
 
 ### Шаги по установке
@@ -50,9 +49,8 @@ venv\Scripts\activate    # Windows
 pip install -r requirements.txt
 ```
 
-4. Настройте базу данных:
+4. Нарботание миграций (создаст базу SQLite автоматически):
 ```bash
-# Нарботание миграций Alembic
 cd app
 alembic upgrade head
 cd ..
@@ -77,7 +75,7 @@ final/
 │   ├── __init__.py
 │   ├── main.py              # Основное приложение FastAPI
 │   ├── config.py            # Конфигурация
-│   ├── database.py          # Настройка БД
+│   ├── database.py          # Настройка SQLite
 │   ├── users/
 │   │   ├── models.py
 │   │   ├── router.py
@@ -94,12 +92,13 @@ final/
 │       └── stylr.css
 ├── requirements.txt
 ├── .env.example
+├── kinovzor.db         # SQLite база данных (создается автоматически)
 └── README.md
 ```
 
 ## Как пользовать
 
-1. При первом запуске зарегистрируйтесь или согласитесь на вовход как гость
+1. При первом запуске зарегистрируйтесь или войдите как гость
 2. Осматривайте фильмы, фильтруйте по жанрам
 3. Нажимайте на постер для воскрытия деталей фильма
 4. Оставляйте оценки и рецензии (авторизанные пользователи)
