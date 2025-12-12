@@ -3,11 +3,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# SQLite database configuration
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql+asyncpg://postgres:postgres@localhost:5432/kinovzor"
+    "sqlite+aiosqlite:///./kinovzor.db"
 )
-DATABASE_ECHO = os.getenv("DATABASE_ECHO", "True").lower() == "true"
+DATABASE_ECHO = os.getenv("DATABASE_ECHO", "False").lower() == "true"
 
 
 def get_db_url():

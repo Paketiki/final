@@ -7,7 +7,13 @@ from datetime import datetime
 
 DATABASE_URL = get_db_url()
 
-engine = create_async_engine(DATABASE_URL, echo=False)
+# SQLite specific settings
+engine = create_async_engine(
+    DATABASE_URL,
+    echo=False,
+    connect_args={"check_same_thread": False},
+    pool_pre_ping=True,
+)
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
 # настройка аннотаций
