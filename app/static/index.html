@@ -1,13 +1,122 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KinoVzor - Кинотека</title>
-    <link rel="stylesheet" href="/static/stylr.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KinoVzor - Кино Платформа</title>
+  <link rel="stylesheet" href="/static/stylr.css" />
 </head>
 <body>
-    <div id="app"></div>
-    <script src="/static/script.js"></script>
+  <div id="app" class="kv-app">
+    <!-- Header -->
+    <header class="kv-header">
+      <div class="kv-header-left">
+        <div class="kv-logo">Кино<span>Взор</span></div>
+      </div>
+      <div class="kv-header-center">
+        <div class="kv-counters">
+          <div class="kv-counter">
+            <span class="kv-counter-label">Фильмов</span>
+            <span class="kv-counter-value" id="ratingCount">0</span>
+          </div>
+          <div class="kv-counter">
+            <span class="kv-counter-label">Рецензий</span>
+            <span class="kv-counter-value" id="reviewCount">0</span>
+          </div>
+        </div>
+      </div>
+      <div class="kv-header-right">
+        <div class="kv-user-area" id="userArea"></div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="kv-main">
+      <!-- Sidebar -->
+      <aside class="kv-sidebar">
+        <!-- Auth Section -->
+        <section class="kv-auth" id="authSection">
+          <div class="kv-auth-header">Авторизация</div>
+          <div class="kv-auth-tabs">
+            <button class="kv-auth-tab kv-auth-tab-active" data-tab="0">Воход</button>
+            <button class="kv-auth-tab" data-tab="1">Регистрация</button>
+            <button class="kv-auth-tab" data-tab="2">Гость</button>
+          </div>
+
+          <!-- Login Panel -->
+          <div class="kv-auth-panel kv-auth-panel-active">
+            <form class="kv-form" onsubmit="return false;">
+              <label>
+                <span>Почта</span>
+                <input type="email" id="loginEmail" placeholder="email@example.com" />
+              </label>
+              <label>
+                <span>Пароль</span>
+                <input type="password" id="loginPassword" placeholder="••••••••" />
+              </label>
+              <button type="button" class="kv-btn kv-btn-primary" id="loginBtn">Войти</button>
+            </form>
+          </div>
+
+          <!-- Register Panel -->
+          <div class="kv-auth-panel">
+            <form class="kv-form" onsubmit="return false;">
+              <label>
+                <span>Почта</span>
+                <input type="email" id="registerEmail" placeholder="email@example.com" />
+              </label>
+              <label>
+                <span>Мня зовут</span>
+                <input type="text" id="registerUsername" placeholder="Ваше имя" />
+              </label>
+              <label>
+                <span>Пароль</span>
+                <input type="password" id="registerPassword" placeholder="••••••••" />
+              </label>
+              <button type="button" class="kv-btn kv-btn-primary" id="registerBtn">Регистрироваться</button>
+            </form>
+          </div>
+
+          <!-- Guest Panel -->
+          <div class="kv-auth-panel">
+            <p style="font-size: 12px; margin-bottom: 12px; color: var(--kv-text-secondary);">
+              Если осмотрите как гость - сможете читать рецензии, но не писать.
+            </p>
+            <button type="button" class="kv-btn kv-btn-secondary" id="guestBtn">Продолжить как гость</button>
+          </div>
+        </section>
+
+        <!-- Genres Filter -->
+        <section class="kv-filters">
+          <h3>Жанры</h3>
+          <div class="kv-genre-list" id="genreFilters"></div>
+        </section>
+
+        <!-- Profile Section -->
+        <section class="kv-profile" id="profileSection"></section>
+      </aside>
+
+      <!-- Main Content Area -->
+      <main class="kv-content">
+        <div class="kv-film-list-header">
+          <h1>Открыть фильмы</h1>
+          <div class="kv-controls">
+            <select class="kv-select" id="sortSelect">
+              <option value="popular">По популярности</option>
+              <option value="rating">По рейтингу</option>
+              <option value="title">По названию</option>
+              <option value="year">По году</option>
+            </select>
+          </div>
+        </div>
+        <div class="kv-film-list" id="filmList"></div>
+      </main>
+    </div>
+
+    <!-- Movie Modal -->
+    <div class="kv-modal" id="movieModal"></div>
+  </div>
+
+  <script src="/static/script.js"></script>
 </body>
 </html>
