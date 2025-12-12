@@ -505,7 +505,7 @@ body {
   width: 220px;
   max-width: 220px;
   min-width: 220px;
-  max-height: 420px;
+  max-height: 460px;
   box-sizing: border-box;
 }
 
@@ -568,6 +568,35 @@ body {
   display: flex;
   gap: 4px;
   align-items: center;
+}
+
+.kv-film-rating-line {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.kv-film-rating {
+  color: var(--kv-orange);
+  font-weight: 600;
+}
+
+.kv-film-rating-count {
+  font-size: 11px;
+  color: var(--kv-text-muted);
+}
+
+.kv-film-no-rating {
+  font-size: 11px;
+  color: var(--kv-text-muted);
+}
+
+.kv-film-stats {
+  font-size: 11px;
+  color: var(--kv-text-muted);
+  padding-top: 4px;
+  border-top: 1px solid var(--kv-border);
 }
 
 /* Modal */
@@ -662,6 +691,27 @@ body {
   font-size: 12px;
   color: var(--kv-text);
   margin: 0 0 8px;
+}
+
+.kv-movie-rating-block {
+  margin-bottom: 8px;
+}
+
+.kv-movie-rating-main {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.kv-movie-rating-value {
+  font-size: 20px;
+  color: var(--kv-orange);
+  font-weight: 700;
+}
+
+.kv-movie-rating-label {
+  font-size: 11px;
+  color: var(--kv-text-muted);
 }
 
 /* Rating stars */
