@@ -40,6 +40,23 @@ def get_movies(genre: Optional[str] = Query(None), sort: str = Query("popular"))
     
     return movies
 
+@router.get("/stats")
+def get_stats():
+    """Get overall site statistics"""
+    movies = db.get_all_movies()
+    movies_count = len(movies)
+    
+    # Count all reviews
+    reviews_count = 0
+    for movie in movies:
+        reviews = db.get_movie_reviews(movie['id'], approved_only=False)
+        reviews_count += len(reviews)
+    
+    return {
+        "movies_count": movies_count,
+        "reviews_count": reviews_count
+    }
+
 # IMPORTANT: Special routes BEFORE {movie_id} routes
 
 @router.get("/user/{user_id}/favorites")
