@@ -11,6 +11,7 @@ let currentUser = null;
 let currentGenre = 'all';
 let currentSort = 'popular';
 let allMovies = [];
+let currentMovieRating = null; // Track current rating in modal
 
 // ===== Utilities =====
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -202,7 +203,7 @@ function renderFilms() {
     card.innerHTML = `
       <div class="kv-film-poster-wrap">
         <img src="${posterUrl}" alt="${title}" class="kv-film-poster">
-        <button class="kv-fav-btn">☆</button>
+        <button class="kv-fav-btn" onclick="toggleFavorite(event, ${m.id})">☆</button>
       </div>
       <div class="kv-film-body">
         <h3 class="kv-film-title">${title}</h3>
@@ -261,8 +262,38 @@ async function loadMovieStatsForCard(mid) {
   }
 }
 
+// ===== Favorites =====
+async function toggleFavorite(event, movieId) {
+  event.stopPropagation();
+  
+  if (!currentUser || currentUser.is_guest) {
+    return alert('Авторизуйтесь для добавления в избранное');
+  }
+  
+  try {
+    const button = event.target.closest('.kv-fav-btn');
+    const isFavorite = button.classList.contains('kv-fav-btn-active');
+    
+    if (isFavorite) {
+      await apiCall('DELETE', `/movies/${movieId}/favorites?user_id=${currentUser.id}`);
+      button.classList.remove('kv-fav-btn-active');
+      button.textContent = '☆';
+    } else {
+      await apiCall('POST', `/movies/${movieId}/favorites?user_id=${currentUser.id}`);
+      button.classList.add('kv-fav-btn-active');
+      button.textContent = '★';
+    }
+    
+    renderProfile();
+  } catch (e) {
+    alert('Ошибка: ' + e.message);
+  }
+}
+
 // ===== Modal =====
 async function openMovie(mid) {
+  currentMovieRating = null; // Reset rating
+  
   try {
     const movie = await apiCall('GET', `/movies/${mid}`);
     const reviews = await apiCall('GET', `/movies/${mid}/reviews?approved_only=false`);
@@ -310,7 +341,7 @@ async function openMovie(mid) {
             </div>
             ${canWrite ? `
               <div class="kv-rating-form">
-                <label class="kv-rating-label">Ваша оценка:</label>
+                <label class="kv-rating-label">Ваша оценка: <span id="ratingValue">не выбрана</span></label>
                 <div class="kv-rating-stars">
                   ${[1,2,3,4,5].map(i => `<button class="kv-rating-star" data-val="${i}">★</button>`).join('')}
                 </div>
@@ -319,8 +350,8 @@ async function openMovie(mid) {
             ${canWrite ? `
               <div class="kv-review-form">
                 <textarea id="reviewText" placeholder="Поделитесь своим мнением..." style="min-height: 60px;"></textarea>
-                <button class="kv-btn kv-btn-primary" onclick="submitReview(${mid})" style="width: 100%;">Отправить</button>
-                <div class="kv-review-note">Ваша рецензия будет проверена модератором</div>
+                <button class="kv-btn kv-btn-primary" onclick="submitReview(${mid})" style="width: 100%;">Отправить рецензию с оценкой</button>
+                <div class="kv-review-note">Рецензия требует обязательную оценку. Ваша рецензия будет проверена модератором</div>
               </div>
             ` : ''}
             <div class="kv-review-section">
@@ -350,13 +381,13 @@ async function openMovie(mid) {
       $$('.kv-rating-star').forEach(s => {
         s.onclick = async () => {
           const val = parseInt(s.dataset.val);
-          try {
-            await apiCall('POST', `/movies/${mid}/ratings?user_id=${currentUser.id}`, { value: val });
-            alert('Оценка сохранена');
-            openMovie(mid);
-          } catch (e) {
-            alert('Ошибка: ' + e.message);
-          }
+          currentMovieRating = val;
+          $('#ratingValue').textContent = val;
+          
+          // Highlight selected star
+          $$('.kv-rating-star').forEach(star => {
+            star.classList.toggle('kv-rating-star-active', parseInt(star.dataset.val) <= val);
+          });
         };
       });
     }
@@ -367,14 +398,21 @@ async function openMovie(mid) {
 
 async function submitReview(mid) {
   const txt = $('#reviewText').value.trim();
-  if (!txt) return alert('Напишите рецензию');
+  
+  if (!currentMovieRating) {
+    return alert('Выберите оценку перед отправкой рецензии');
+  }
+  
+  if (!txt) {
+    return alert('Напишите рецензию');
+  }
 
   try {
     await apiCall('POST', `/movies/${mid}/reviews?user_id=${currentUser.id}`, {
       text: txt,
-      rating: null,
+      rating: currentMovieRating,
     });
-    alert('Отправлено!');
+    alert('Рецензия отправлена!');
     openMovie(mid);
     updateCounters();
   } catch (e) {
@@ -399,19 +437,45 @@ function renderUserArea() {
   }
 }
 
-function renderProfile() {
+async function renderProfile() {
   const prof = $('#profileSection');
   if (!prof) return;
 
   if (!currentUser || currentUser.is_guest) {
     prof.innerHTML = '<div class="kv-empty">Авторизуйтесь</div>';
   } else {
+    // Get user favorites
+    let favoritesHTML = '';
+    try {
+      const favorites = await apiCall('GET', `/movies/user/${currentUser.id}/favorites`);
+      if (Array.isArray(favorites) && favorites.length > 0) {
+        favoritesHTML = `
+          <div class="kv-profile-block">
+            <div class="kv-profile-block-title">Избранные фильмы:</div>
+            <div class="kv-favorites-list">
+              ${favorites.map(f => `<div class="kv-favorite-item">• ${f.title}</div>`).join('')}
+            </div>
+          </div>
+        `;
+      } else {
+        favoritesHTML = `
+          <div class="kv-profile-block">
+            <div class="kv-profile-block-title">Избранные фильмы: нет</div>
+          </div>
+        `;
+      }
+    } catch (e) {
+      console.error('Favorites load error:', e);
+      favoritesHTML = '<div class="kv-profile-block"><div class="kv-profile-block-title">Избранные фильмы: ошибка загрузки</div></div>';
+    }
+    
     prof.innerHTML = `
       <h2>Профиль</h2>
       <div class="kv-profile-block">
         <div class="kv-profile-block-title">Ник: ${currentUser.username}</div>
         <div class="kv-profile-block-title">Почта: ${currentUser.email}</div>
       </div>
+      ${favoritesHTML}
     `;
   }
 }
