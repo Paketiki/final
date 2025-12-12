@@ -115,25 +115,41 @@ function logout() {
 async function loadMovies() {
   try {
     const data = await apiCall('GET', '/movies/');
+    console.log('Loaded movies data:', data);
+    
     // Ensure it's always an array
     if (Array.isArray(data)) {
       allMovies = data;
     } else if (data && Array.isArray(data.items)) {
       allMovies = data.items;
+    } else if (data && typeof data === 'object') {
+      // Maybe it's a single object, wrap it
+      allMovies = [data];
     } else {
       allMovies = [];
-      console.error('Unexpected response:', data);
+      console.error('Unexpected response format:', data);
     }
+    
+    console.log('Processed allMovies:', allMovies);
     renderFilms();
+    renderGenres();
     updateCounters();
   } catch (e) {
+    console.error('Load error:', e);
     alert('Ошибка загрузки: ' + e.message);
+    allMovies = [];
+    renderFilms();
+    renderGenres();
+    updateCounters();
   }
 }
 
 function getGenres() {
-  if (!Array.isArray(allMovies)) return ['all'];
-  const set = new Set(allMovies.map(m => m.genre));
+  if (!Array.isArray(allMovies) || allMovies.length === 0) return ['all'];
+  const set = new Set();
+  allMovies.forEach(m => {
+    if (m && m.genre) set.add(m.genre);
+  });
   return ['all', ...Array.from(set).sort()];
 }
 
@@ -158,12 +174,16 @@ function getFiltered() {
   if (!Array.isArray(allMovies)) return [];
   let list = [...allMovies];
   if (currentGenre !== 'all') {
-    list = list.filter(m => m.genre === currentGenre);
+    list = list.filter(m => m && m.genre === currentGenre);
   }
   // Sort
-  if (currentSort === 'title') list.sort((a, b) => a.title.localeCompare(b.title, 'ru'));
-  else if (currentSort === 'year') list.sort((a, b) => b.year - a.year);
-  else list.sort((a, b) => b.id - a.id);
+  if (currentSort === 'title') {
+    list.sort((a, b) => (a.title || '').localeCompare(b.title || '', 'ru'));
+  } else if (currentSort === 'year') {
+    list.sort((a, b) => (b.year || 0) - (a.year || 0));
+  } else {
+    list.sort((a, b) => (b.id || 0) - (a.id || 0));
+  }
   return list;
 }
 
@@ -179,18 +199,19 @@ function renderFilms() {
 
   cont.innerHTML = '';
   films.forEach(m => {
+    if (!m) return;
     const card = document.createElement('article');
     card.className = 'kv-film-card';
     card.innerHTML = `
       <div class="kv-film-poster-wrap">
-        <img src="${m.poster_url}" alt="${m.title}" class="kv-film-poster">
+        <img src="${m.poster_url || ''}" alt="${m.title || 'Без названия'}" class="kv-film-poster">
         <button class="kv-fav-btn">★</button>
       </div>
       <div class="kv-film-body">
-        <h3 class="kv-film-title">${m.title}</h3>
+        <h3 class="kv-film-title">${m.title || 'Без названия'}</h3>
         <div class="kv-film-meta">
-          <span>${m.genre}</span>
-          <span>${m.year}</span>
+          <span>${m.genre || ''}</span>
+          <span>${m.year || ''}</span>
         </div>
       </div>
     `;
@@ -219,14 +240,14 @@ async function openMovie(mid) {
         <div class="kv-movie-modal-layout">
           <div class="kv-movie-modal-left">
             <div class="kv-movie-poster-wrap">
-              <img src="${movie.poster_url}" class="kv-movie-poster">
+              <img src="${movie.poster_url || ''}" class="kv-movie-poster">
             </div>
           </div>
           <div class="kv-movie-modal-right">
-            <h2>${movie.title}</h2>
+            <h2>${movie.title || 'Без названия'}</h2>
             <div class="kv-movie-meta">
-              <span>${movie.genre}</span>
-              <span>${movie.year}</span>
+              <span>${movie.genre || ''}</span>
+              <span>${movie.year || ''}</span>
             </div>
             <p class="kv-movie-desc">${movie.description || 'Нет описания'}</p>
             <div class="kv-movie-rating-block">
@@ -278,6 +299,7 @@ async function openMovie(mid) {
           try {
             await apiCall('POST', `/movies/${mid}/ratings?user_id=${currentUser.id}`, { value: val });
             alert('Оценка сохранена');
+            openMovie(mid); // Refresh
           } catch (e) {
             alert('Ошибка: ' + e.message);
           }
@@ -342,8 +364,9 @@ function renderProfile() {
 function updateCounters() {
   const rc = $('#ratingCount');
   const rwc = $('#reviewCount');
-  if (rc) rc.textContent = Array.isArray(allMovies) ? allMovies.length : 0;
-  if (rwc) rwc.textContent = Array.isArray(allMovies) ? allMovies.length : 0;
+  const count = Array.isArray(allMovies) ? allMovies.length : 0;
+  if (rc) rc.textContent = count;
+  if (rwc) rwc.textContent = count;
 }
 
 // ===== Init =====
@@ -377,10 +400,9 @@ async function init() {
   currentUser = loadLS(LS_KEYS.CURRENT_USER, null);
   setupTabs();
   setupButtons();
-  await loadMovies();
-  renderGenres();
   renderUserArea();
   renderProfile();
+  await loadMovies();
 }
 
 if (document.readyState === 'loading') {
