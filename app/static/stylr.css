@@ -322,7 +322,7 @@ body {
   padding: 8px;
 }
 
-.kv-filters h3 {
+.kv-filters h2, .kv-filters h3 {
   font-size: 13px;
   margin: 0 0 6px;
 }
@@ -373,11 +373,65 @@ body {
   margin-bottom: 4px;
 }
 
-.kv-empty {
-  padding: 8px 0;
+.kv-profile-block-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.kv-mini-film-list {
+  max-height: 120px;
+  overflow: auto;
+}
+
+.kv-mini-film {
+  padding: 4px 0;
+  border-bottom: 1px solid var(--kv-border);
+  cursor: pointer;
+}
+
+.kv-mini-film:last-child {
+  border-bottom: none;
+}
+
+.kv-mini-title {
+  font-size: 12px;
+}
+
+.kv-mini-meta {
+  font-size: 11px;
   color: var(--kv-text-muted);
-  text-align: center;
+}
+
+.kv-collection-list {
+  max-height: 120px;
+  overflow: auto;
+}
+
+.kv-collection {
+  padding: 4px 0;
+  border-bottom: 1px solid var(--kv-border);
+}
+
+.kv-collection:last-child {
+  border-bottom: none;
+}
+
+.kv-collection-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.kv-collection-title {
+  font-size: 12px;
+}
+
+.kv-collection-count {
+  font-size: 11px;
+  color: var(--kv-text-muted);
 }
 
 /* Film list */
@@ -393,11 +447,6 @@ body {
   margin: 0;
 }
 
-.kv-controls {
-  display: flex;
-  gap: 6px;
-}
-
 .kv-select {
   border-radius: 999px;
   border: 1px solid var(--kv-gray);
@@ -411,10 +460,11 @@ body {
   flex: 1;
   overflow-y: auto;
   display: grid;
+  /* уменьшаем количество карточек в строке и делаем их больше */
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 12px;
-  justify-items: center;
-  padding: 8px;
+  justify-items: center; /* центрируем карточки в клетках, чтобы размер был предсказуем */
+  padding: 8px; /* равномерный отступ вокруг карточек */
 }
 
 .kv-film-card {
@@ -426,10 +476,11 @@ body {
   flex-direction: column;
   cursor: pointer;
   transition: var(--kv-transition);
+  /* Более крупные и фиксированные размеры карточки, чтобы форма оставалась неизменной */
   width: 220px;
   max-width: 220px;
   min-width: 220px;
-  max-height: 480px;
+  max-height: 440px;
   box-sizing: border-box;
 }
 
@@ -445,7 +496,7 @@ body {
   margin-bottom: 6px;
   background: #050505;
   width: 100%;
-  height: 330px;
+  height: 330px; /* фиксированная высота для стабильной формы (2:3 при ширине 220px) */
 }
 
 .kv-film-poster {
@@ -462,7 +513,7 @@ body {
   border-radius: 999px;
   border: none;
   padding: 2px 6px;
-  font-size: 14px;
+  font-size: 11px;
   background: rgba(0, 0, 0, 0.7);
   color: var(--kv-text-muted);
   cursor: pointer;
@@ -484,7 +535,6 @@ body {
 .kv-film-title {
   font-size: 13px;
   margin: 0;
-  line-height: 1.3;
 }
 
 .kv-film-meta {
@@ -525,27 +575,21 @@ body {
 /* Modal */
 .kv-modal {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   display: none;
-  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
 }
 
 .kv-modal-open {
   display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .kv-modal-backdrop {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
 }
 
 .kv-modal-dialog {
@@ -574,13 +618,9 @@ body {
   color: var(--kv-text-muted);
   font-size: 18px;
   cursor: pointer;
-  padding: 4px 8px;
 }
 
-.kv-modal-close:hover {
-  color: var(--kv-orange);
-}
-
+/* Movie modal */
 .kv-movie-modal-layout {
   display: grid;
   grid-template-columns: minmax(0, 32%) minmax(0, 68%);
@@ -597,7 +637,7 @@ body {
   overflow: hidden;
   background: #050505;
   width: 180px;
-  height: 270px;
+  height: 270px; /* фиксированная форма 2:3 */
 }
 
 .kv-movie-poster {
@@ -607,36 +647,27 @@ body {
   display: block;
 }
 
-.kv-movie-modal-right {
-  flex: 1;
-  min-width: 0;
-}
-
 .kv-movie-modal-right h2 {
+  margin: 0 0 4px;
   font-size: 16px;
-  margin: 0 0 6px;
 }
 
 .kv-movie-meta {
-  display: flex;
-  gap: 12px;
   font-size: 12px;
   color: var(--kv-text-muted);
-  margin-bottom: 8px;
+  display: flex;
+  gap: 4px;
+  margin-bottom: 6px;
 }
 
 .kv-movie-desc {
   font-size: 12px;
-  color: var(--kv-text-muted);
-  margin-bottom: 8px;
-  line-height: 1.4;
+  color: var(--kv-text);
+  margin: 0 0 8px;
 }
 
 .kv-movie-rating-block {
   margin-bottom: 8px;
-  padding: 6px;
-  background: var(--kv-bg);
-  border-radius: var(--kv-radius-sm);
 }
 
 .kv-movie-rating-main {
@@ -647,8 +678,8 @@ body {
 
 .kv-movie-rating-value {
   font-size: 20px;
-  font-weight: 700;
   color: var(--kv-orange);
+  font-weight: 700;
 }
 
 .kv-movie-rating-label {
@@ -656,16 +687,18 @@ body {
   color: var(--kv-text-muted);
 }
 
+/* Rating stars */
 .kv-rating-form {
   margin-bottom: 8px;
-  padding: 6px;
-  background: var(--kv-bg);
-  border-radius: var(--kv-radius-sm);
+  font-size: 11px;
+}
+
+.kv-rating-form-disabled {
+  color: var(--kv-text-muted);
 }
 
 .kv-rating-label {
-  font-size: 12px;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 }
 
 .kv-rating-stars {
@@ -674,70 +707,77 @@ body {
 }
 
 .kv-rating-star {
-  background: transparent;
-  border: none;
-  color: var(--kv-text-muted);
-  font-size: 16px;
   cursor: pointer;
+  font-size: 16px;
+  color: var(--kv-gray);
   transition: var(--kv-transition);
+  border: none;
+  background: transparent;
 }
 
-.kv-rating-star:hover {
+.kv-rating-star:hover,
+.kv-rating-star:hover ~ .kv-rating-star {
   color: var(--kv-orange);
 }
 
+/* Review in modal */
+.kv-review-form textarea {
+  font-size: 12px;
+}
+
+.kv-review-note {
+  font-size: 10px;
+  color: var(--kv-text-muted);
+}
+
 .kv-review-section {
-  margin-bottom: 8px;
   margin-top: 8px;
 }
 
 .kv-review-section-title {
   font-size: 13px;
-  font-weight: 600;
   margin-bottom: 6px;
 }
 
 .kv-review-list {
-  max-height: 300px;
-  overflow-y: auto;
+  max-height: 200px;
+  overflow: auto;
   border-radius: var(--kv-radius-sm);
   border: 1px solid var(--kv-border);
   padding: 6px;
   background: #151515;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
 }
 
 .kv-review {
-  padding: 6px;
-  background: var(--kv-bg);
-  border-radius: var(--kv-radius-sm);
-  border-left: 2px solid var(--kv-orange);
   font-size: 12px;
+  padding: 4px 0;
+  border-bottom: 1px solid #232323;
+}
+
+.kv-review:last-child {
+  border-bottom: none;
 }
 
 .kv-review-top {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 4px;
-  font-size: 11px;
+  margin-bottom: 2px;
 }
 
 .kv-review-author {
-  color: var(--kv-text-muted);
   font-weight: 500;
 }
 
 .kv-review-rating {
+  font-size: 11px;
   color: var(--kv-orange);
 }
 
+.kv-review-rating-muted {
+  color: var(--kv-gray);
+}
+
 .kv-review-text {
-  font-size: 12px;
-  line-height: 1.4;
-  margin: 0;
   color: var(--kv-text-muted);
 }
 
@@ -745,13 +785,48 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 6px;
-  background: var(--kv-bg);
-  border-radius: var(--kv-radius-sm);
 }
 
-.kv-review-note {
-  font-size: 10px;
+/* Misc */
+.kv-empty {
+  font-size: 11px;
   color: var(--kv-text-muted);
-  margin-top: 2px;
+  padding: 8px 0;
+  text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  body {
+    overflow: auto;
+  }
+  .kv-main {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    height: auto;
+    overflow: visible;
+  }
+  .kv-sidebar {
+    order: 1;
+  }
+  .kv-content {
+    order: 2;
+    height: auto;
+    overflow: visible;
+  }
+  .kv-film-list {
+    grid-template-columns: 1fr;
+    flex: unset;
+    overflow: visible;
+  }
+  .kv-movie-modal-layout {
+    grid-template-columns: 1fr;
+  }
+  .kv-movie-modal-left {
+    justify-content: flex-start;
+  }
+  .kv-movie-poster {
+    max-width: none;
+    width: 50%;
+  }
 }
