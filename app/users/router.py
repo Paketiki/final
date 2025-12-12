@@ -10,7 +10,7 @@ class UserRegister(BaseModel):
     username: str
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    username: str
     password: str
 
 @router.post("/register")
@@ -26,8 +26,9 @@ def register(data: UserRegister):
 
 @router.post("/login")
 def login(data: UserLogin):
-    """Login user"""
-    user = db.get_user_by_email(data.email)
+    """Login user by username"""
+    # Get user by username
+    user = db.get_user_by_username(data.username)
     
     if not user or user['password'] != data.password:
         raise HTTPException(status_code=401, detail="Invalid credentials")
