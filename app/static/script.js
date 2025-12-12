@@ -233,22 +233,14 @@ function renderFilms() {
 
 async function loadMovieStatsForCard(mid) {
   try {
-    // Получаем рейтинги (оценки) из таблицы ratings
-    const ratingEndpoint = `/movies/${mid}/rating-stats`;
-    let ratingStats = null;
-    
-    try {
-      ratingStats = await apiCall('GET', ratingEndpoint);
-    } catch (e) {
-      console.error('Rating stats error:', e);
-      ratingStats = null;
-    }
+    // Получаем рейтинги из таблицы ratings
+    const ratingStats = await apiCall('GET', `/movies/${mid}/rating-stats`);
     
     const ratingEl = $(`#rating-${mid}`);
     const statsEl = $(`#stats-${mid}`);
     if (!ratingEl || !statsEl) return;
     
-    // Отображаем рейтинг (из таблицы ratings, если есть)
+    // Отображаем рейтинг из таблицы ratings
     if (ratingStats && ratingStats.average !== null && ratingStats.count > 0) {
       const avg = ratingStats.average;
       const count = ratingStats.count;
@@ -256,7 +248,7 @@ async function loadMovieStatsForCard(mid) {
         <span class="kv-film-rating">${avg.toFixed(1)}</span>
         <span class="kv-film-rating-count">(${count})</span>
       `;
-      // Выводим среднее арифметическое
+      // Выводим среднее арифметическое ниже
       statsEl.innerHTML = `⭐ ${avg.toFixed(1)} / 5`;
     } else {
       ratingEl.innerHTML = '<span class="kv-film-no-rating">Нет оценок</span>';
@@ -301,7 +293,7 @@ async function deleteReview(reviewId, movieId) {
     return alert('Только модератор может удалять рецензии');
   }
   
-  if (!confirm('Вы уверены, что хотите удалить эту рецензию?') {
+  if (!confirm('Вы уверены, что хотите удалить эту рецензию?')) {
     return;
   }
   
@@ -324,7 +316,7 @@ async function openMovie(mid) {
     const movie = await apiCall('GET', `/movies/${mid}`);
     const reviews = await apiCall('GET', `/movies/${mid}/reviews?approved_only=false`);
     
-    // Получаем рейтинги (оценки пользователей)
+    // Получаем рейтинги из таблицы ratings
     let ratingStats = null;
     try {
       ratingStats = await apiCall('GET', `/movies/${mid}/rating-stats`);
@@ -343,7 +335,7 @@ async function openMovie(mid) {
     const year = movie.year || '';
     const desc = movie.description || 'Нет описания';
 
-    // Используем среднее из рейтингов (если есть)
+    // Используем среднее из рейтингов таблицы (не рецензий)
     const avgRating = (ratingStats && ratingStats.average !== null) 
       ? ratingStats.average.toFixed(1)
       : null;
