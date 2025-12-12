@@ -1,4 +1,4 @@
-"""Seed database with 50 real movies, reviews, and 10 viewers + 1 admin"""
+"""Seed database with 50 real movies, reviews, ratings, and users"""
 import sys
 from pathlib import Path
 import hashlib
@@ -21,8 +21,8 @@ viewers_data = [
     {"email": "pavlov@mail.ru", "username": "Павлов Павел", "password": "viewer123"},
 ]
 
-# Admin user
-admin_user = {"email": "moderator@kinovzor.ru", "username": "moderator", "password": "admin123"}
+# Moderator and admin users
+admin_user = {"email": "moderator@kinovzor.ru", "username": "moderator", "password": "admin123", "is_moderator": True}
 
 # Real movies with posters
 movies_data = [
@@ -450,8 +450,8 @@ def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
 def seed_movies_and_reviews():
-    """Load all 50 real movies with reviews, 10 viewers, and 1 admin into database"""
-    print("\n🍋 Loading 50 movies, reviews, and users...\n")
+    """Load all 50 real movies with reviews, ratings, and users into database"""
+    print("\n🍋 Loading 50 movies, reviews, ratings, and users...\n")
     
     # Create users first
     print("👥 Creating users...")
@@ -467,15 +467,16 @@ def seed_movies_and_reviews():
         user_ids.append(user['id'])
         print(f"   ✅ Created viewer: {viewer['username']}")
     
-    # Create admin
+    # Create moderator
     admin = db.create_user(
         email=admin_user["email"],
         username=admin_user["username"],
-        password=hash_password(admin_user["password"])
+        password=hash_password(admin_user["password"]),
+        is_moderator=admin_user["is_moderator"]
     )
-    print(f"   ✅ Created admin: {admin_user['username']}")
+    print(f"   ✅ Created moderator: {admin_user['username']}")
     
-    print(f"\n🎬 Creating movies and reviews...\n")
+    print(f"\n🎬 Creating movies, reviews, and ratings...\n")
     
     total_reviews = 0
     total_ratings = 0
@@ -508,6 +509,13 @@ def seed_movies_and_reviews():
                 rating=review["rating"]
             )
             total_reviews += 1
+            
+            # Create corresponding rating in ratings table
+            db.create_or_update_rating(
+                movie_id=movie_id,
+                user_id=user_id,
+                value=float(review["rating"])
+            )
             total_ratings += 1
         
         # Print progress
@@ -516,11 +524,11 @@ def seed_movies_and_reviews():
     
     print("\n✅ All data loaded!")
     print(f"🎬 50 настоящих фильмов")
-    print(f"👥 10 зрителей + 1 администратор")
-    print(f"🗣️  {total_reviews} рецензий (от 10 пользователей)")
-    print(f"⭐ {total_ratings} оценок")
+    print(f"👥 10 зрителей + 1 модератор")
+    print(f"🗣️  {total_reviews} рецензий (от {len(user_ids)} пользователей)")
+    print(f"⭐ {total_ratings} оценок в таблице ratings")
     print(f"\n📁 Учётные данные:")
-    print(f"   Администратор:")
+    print(f"   Модератор:")
     print(f"   Email: {admin_user['email']}")
     print(f"   Password: {admin_user['password']}")
     print(f"\n   Зритель пример (Иванов Игорь):")
