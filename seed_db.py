@@ -1,10 +1,28 @@
-"""Seed database with 50 real movies and reviews"""
+"""Seed database with 50 real movies, reviews, and 10 viewers + 1 admin"""
 import sys
 from pathlib import Path
+import hashlib
 
 sys.path.insert(0, str(Path(__file__).parent))
 
 from app import db
+
+# 10 viewer users
+viewers_data = [
+    {"email": "ivanov@mail.ru", "username": "Иванов Игорь", "password": "viewer123"},
+    {"email": "petrov@mail.ru", "username": "Петров Петр", "password": "viewer123"},
+    {"email": "smirnov@mail.ru", "username": "Смирнов Сергей", "password": "viewer123"},
+    {"email": "sokolov@mail.ru", "username": "Соколов Сергей", "password": "viewer123"},
+    {"email": "lebedev@mail.ru", "username": "Лебедев Лев", "password": "viewer123"},
+    {"email": "novikov@mail.ru", "username": "Новиков Николай", "password": "viewer123"},
+    {"email": "volkov@mail.ru", "username": "Волков Виктор", "password": "viewer123"},
+    {"email": "solovyev@mail.ru", "username": "Соловьев Станислав", "password": "viewer123"},
+    {"email": "antonov@mail.ru", "username": "Антонов Андрей", "password": "viewer123"},
+    {"email": "pavlov@mail.ru", "username": "Павлов Павел", "password": "viewer123"},
+]
+
+# Admin user
+admin_user = {"email": "moderator@kinovzor.ru", "username": "moderator", "password": "admin123"}
 
 # Real movies with posters
 movies_data = [
@@ -125,9 +143,37 @@ reviews_templates = {
     ],
 }
 
+def hash_password(password: str) -> str:
+    """Hash password using SHA256"""
+    return hashlib.sha256(password.encode()).hexdigest()
+
 def seed_movies_and_reviews():
-    """Load all 50 real movies with reviews into database"""
-    print("\n🍋 Loading 50 real movies and reviews...\n")
+    """Load all 50 real movies with reviews, 10 viewers, and 1 admin into database"""
+    print("\n🍋 Loading 50 movies, reviews, and users...\n")
+    
+    # Create users first
+    print("👥 Creating users...")
+    user_ids = []
+    
+    # Create 10 viewers
+    for viewer in viewers_data:
+        user = db.create_user(
+            email=viewer["email"],
+            username=viewer["username"],
+            password=hash_password(viewer["password"])
+        )
+        user_ids.append(user['id'])
+        print(f"   ✅ Created viewer: {viewer['username']}")
+    
+    # Create admin
+    admin = db.create_user(
+        email=admin_user["email"],
+        username=admin_user["username"],
+        password=hash_password(admin_user["password"])
+    )
+    print(f"   ✅ Created admin: {admin_user['username']}")
+    
+    print(f"\n🎬 Creating movies and reviews...\n")
     
     total_reviews = 0
     total_ratings = 0
@@ -146,13 +192,16 @@ def seed_movies_and_reviews():
         # Get reviews for this genre
         genre_reviews = reviews_templates.get(movie_info["genre"], reviews_templates["Драма"])
         
-        # Add 4-7 reviews per movie
+        # Add 4-7 reviews per movie from different users
         review_count = 4 + (i % 4)  # 4-7 reviews
         for j in range(review_count):
             review = genre_reviews[j % len(genre_reviews)]
+            # Assign to different user (cycle through user_ids)
+            user_id = user_ids[j % len(user_ids)]
+            
             db.create_review(
                 movie_id=movie_id,
-                user_id=None,
+                user_id=user_id,
                 text=review["text"],
                 rating=review["rating"]
             )
@@ -165,9 +214,17 @@ def seed_movies_and_reviews():
     
     print("\n✅ All data loaded!")
     print(f"🎬 50 настоящих фильмов")
-    print(f"🗣️  {total_reviews} рецензий")
+    print(f"👥 10 зрителей + 1 администратор")
+    print(f"🗣️  {total_reviews} рецензий (от 10 пользователей)")
     print(f"⭐ {total_ratings} оценок")
-    print(f"📁 file: kinovzor.db\n")
+    print(f"\n📁 Учётные данные:")
+    print(f"   Администратор:")
+    print(f"   Email: {admin_user['email']}")
+    print(f"   Password: {admin_user['password']}")
+    print(f"\n   Зритель пример (Иванов Игорь):")
+    print(f"   Email: {viewers_data[0]['email']}")
+    print(f"   Password: {viewers_data[0]['password']}")
+    print(f"\n📁 file: kinovzor.db\n")
 
 if __name__ == "__main__":
     seed_movies_and_reviews()
