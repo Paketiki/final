@@ -130,7 +130,7 @@ async function loadMovies() {
     renderGenres();
     updateCounters();
   } catch (e) {
-    alert('Ошибка загружки: ' + e.message);
+    alert('Ошибка загрузки: ' + e.message);
     allMovies = [];
     renderFilms();
     renderGenres();
@@ -214,7 +214,7 @@ function renderFilms() {
           <span>${genre}</span>
         </div>
         <div class="kv-film-rating-line" id="rating-${m.id}">
-          <span class="kv-film-no-rating">Загружка...</span>
+          <span class="kv-film-no-rating">Загрузка...</span>
         </div>
         <div class="kv-film-stats" id="stats-${m.id}"></div>
       </div>
@@ -254,11 +254,12 @@ async function loadMovieStatsForCard(mid) {
       ratingEl.innerHTML = '<span class="kv-film-no-rating">Нет оценок</span>';
     }
     
-    // Reviews count - ныне отображаем кол-во рецензий
-    if (reviews.length > 0) {
-      statsEl.innerHTML = `🗣 ${reviews.length} рецензий`;
+    // Показываем среднее арифметическое оценок внизу
+    if (ratings.length > 0) {
+      const avg = ratings.reduce((sum, r) => sum + r, 0) / ratings.length;
+      statsEl.innerHTML = `⭐ ${avg.toFixed(1)} / 5`;
     } else {
-      statsEl.innerHTML = `🗣 нет рецензий`;
+      statsEl.innerHTML = `⭐ нет оценок`;
     }
   } catch (e) {
     console.error('Stats load error:', e);
@@ -495,7 +496,7 @@ async function renderProfile() {
       }
     } catch (e) {
       console.error('Favorites load error:', e);
-      favoritesHTML = '<div class="kv-profile-block"><div class="kv-profile-block-title">Избранные фильмы: ошибка загружки</div></div>';
+      favoritesHTML = '<div class="kv-profile-block"><div class="kv-profile-block-title">Избранные фильмы: ошибка загрузки</div></div>';
     }
     
     const roleLabel = currentUser.is_moderator ? ' (Модератор)' : '';
