@@ -3,16 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>KinoVzor - Кино Платформа</title>
+  <title>КиноВзор</title>
   <link rel="stylesheet" href="/static/stylr.css" />
 </head>
 <body>
   <div id="app" class="kv-app">
     <!-- Header -->
     <header class="kv-header">
-      <div class="kv-header-left">
-        <div class="kv-logo">Кино<span>Взор</span></div>
-      </div>
+      <div class="kv-logo">Кино<span>Взор</span></div>
       <div class="kv-header-center">
         <div class="kv-counters">
           <div class="kv-counter">
@@ -25,9 +23,7 @@
           </div>
         </div>
       </div>
-      <div class="kv-header-right">
-        <div class="kv-user-area" id="userArea"></div>
-      </div>
+      <div class="kv-user-area" id="userArea"></div>
     </header>
 
     <!-- Main Content -->
@@ -36,7 +32,6 @@
       <aside class="kv-sidebar">
         <!-- Auth Section -->
         <section class="kv-auth" id="authSection">
-          <div class="kv-auth-header">Авторизация</div>
           <div class="kv-auth-tabs">
             <button class="kv-auth-tab kv-auth-tab-active" data-tab="0">Воход</button>
             <button class="kv-auth-tab" data-tab="1">Регистрация</button>
@@ -48,13 +43,13 @@
             <form class="kv-form" onsubmit="return false;">
               <label>
                 <span>Почта</span>
-                <input type="email" id="loginEmail" placeholder="email@example.com" />
+                <input type="email" id="loginEmail" placeholder="test@example.com" />
               </label>
               <label>
                 <span>Пароль</span>
                 <input type="password" id="loginPassword" placeholder="••••••••" />
               </label>
-              <button type="button" class="kv-btn kv-btn-primary" id="loginBtn">Войти</button>
+              <button type="button" class="kv-btn kv-btn-primary" id="loginBtn" style="width: 100%;">Войти</button>
             </form>
           </div>
 
@@ -63,26 +58,24 @@
             <form class="kv-form" onsubmit="return false;">
               <label>
                 <span>Почта</span>
-                <input type="email" id="registerEmail" placeholder="email@example.com" />
+                <input type="email" id="registerEmail" placeholder="test@example.com" />
               </label>
               <label>
                 <span>Мня зовут</span>
-                <input type="text" id="registerUsername" placeholder="Ваше имя" />
+                <input type="text" id="registerUsername" placeholder="Никнейм" />
               </label>
               <label>
                 <span>Пароль</span>
                 <input type="password" id="registerPassword" placeholder="••••••••" />
               </label>
-              <button type="button" class="kv-btn kv-btn-primary" id="registerBtn">Регистрироваться</button>
+              <button type="button" class="kv-btn kv-btn-primary" id="registerBtn" style="width: 100%;">Определить</button>
             </form>
           </div>
 
           <!-- Guest Panel -->
           <div class="kv-auth-panel">
-            <p style="font-size: 12px; margin-bottom: 12px; color: var(--kv-text-secondary);">
-              Если осмотрите как гость - сможете читать рецензии, но не писать.
-            </p>
-            <button type="button" class="kv-btn kv-btn-secondary" id="guestBtn">Продолжить как гость</button>
+            <p style="font-size: 12px; margin-bottom: 8px; color: var(--kv-text-muted);">Если входите как гость - сможете читать рецензии, но не снисать.</p>
+            <button type="button" class="kv-btn kv-btn-secondary" id="guestBtn" style="width: 100%;">Продолжить как гость</button>
           </div>
         </section>
 
