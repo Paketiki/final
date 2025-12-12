@@ -26,54 +26,356 @@ admin_user = {"email": "moderator@kinovzor.ru", "username": "moderator", "passwo
 
 # Real movies with posters
 movies_data = [
-    {"title": "Шоу Трумэна", "year": 1998, "genre": "Драма", "poster": "https://images.pexels.com/photos/799137/pexels-photo-799137.jpeg", "desc": "История человека, жизнь которого - один огромный телевизионный спектакль"},
-    {"title": "Жизнь прекрасна", "year": 1997, "genre": "Драма", "poster": "https://images.pexels.com/photos/799114/pexels-photo-799114.jpeg", "desc": "Отец защищает своего сына от ужасов войны через игру и воображение"},
-    {"title": "Форрест Гамп", "year": 1994, "genre": "Драма", "poster": "https://images.pexels.com/photos/799152/pexels-photo-799152.jpeg", "desc": "История простого человека, который достиг невероятных высот"},
-    {"title": "Зелёная миля", "year": 1999, "genre": "Драма", "poster": "https://images.pexels.com/photos/5701233/pexels-photo-5701233.jpeg", "desc": "Исправительная камера и чудо в виде сверхъестественных способностей"},
-    {"title": "Спасение рядового Райана", "year": 1998, "genre": "Боевик", "poster": "https://images.pexels.com/photos/799127/pexels-photo-799127.jpeg", "desc": "Эпическая история о спасении солдата во время Второй мировой войны"},
-    {"title": "Бойцовский клуб", "year": 1999, "genre": "Триллер", "poster": "https://images.pexels.com/photos/799158/pexels-photo-799158.jpeg", "desc": "Психологический триллер о подпольном клубе бойцов"},
-    {"title": "Матрица", "year": 1999, "genre": "Фантастика", "poster": "https://images.pexels.com/photos/799150/pexels-photo-799150.jpeg", "desc": "Революционный фантастический боевик о реальности и иллюзии"},
-    {"title": "Список Шиндлера", "year": 1993, "genre": "Драма", "poster": "https://images.pexels.com/photos/799116/pexels-photo-799116.jpeg", "desc": "История немецкого бизнесмена, спасившего тысячи евреев"},
-    {"title": "Звёздные войны: Эпизод I", "year": 1999, "genre": "Фантастика", "poster": "https://images.pexels.com/photos/799137/pexels-photo-799137.jpeg", "desc": "Новое начало саги о войне галактик"},
-    {"title": "Титаник", "year": 1997, "genre": "Мелодрама", "poster": "https://images.pexels.com/photos/799114/pexels-photo-799114.jpeg", "desc": "Эпическая романтическая драма о гибели лайнера"},
-    {"title": "Красота по-американски", "year": 1999, "genre": "Драма", "poster": "https://images.pexels.com/photos/799152/pexels-photo-799152.jpeg", "desc": "Тёмная комедия о мечтах и идеалах в пригороде"},
-    {"title": "Хороший, плохой, злой", "year": 1966, "genre": "Боевик", "poster": "https://images.pexels.com/photos/5701233/pexels-photo-5701233.jpeg", "desc": "Культовый вестерн про три стрелка в поисках сокровища"},
-    {"title": "Пульп Фикшн", "year": 1994, "genre": "Триллер", "poster": "https://images.pexels.com/photos/799127/pexels-photo-799127.jpeg", "desc": "Нелинейное повествование о криминальной жизни Лос-Анджелеса"},
-    {"title": "Молчание ягнят", "year": 1991, "genre": "Триллер", "poster": "https://images.pexels.com/photos/799158/pexels-photo-799158.jpeg", "desc": "Психологический триллер про охоту на серийного убийцу"},
-    {"title": "Назад в будущее", "year": 1985, "genre": "Комедия", "poster": "https://images.pexels.com/photos/799150/pexels-photo-799150.jpeg", "desc": "Приключенческая комедия о путешествиях во времени"},
-    {"title": "Пираты Карибского моря", "year": 2003, "genre": "Приключения", "poster": "https://images.pexels.com/photos/799116/pexels-photo-799116.jpeg", "desc": "Веселое приключение капитана Джека Воробья"},
-    {"title": "Великий Гэтсби", "year": 2013, "genre": "Драма", "poster": "https://images.pexels.com/photos/799137/pexels-photo-799137.jpeg", "desc": "Роман о любви, амбициях и американской мечте"},
-    {"title": "Интерстеллар", "year": 2014, "genre": "Фантастика", "poster": "https://images.pexels.com/photos/799114/pexels-photo-799114.jpeg", "desc": "Космическая эпопея о спасении человечества"},
-    {"title": "Темный рыцарь", "year": 2008, "genre": "Боевик", "poster": "https://images.pexels.com/photos/799152/pexels-photo-799152.jpeg", "desc": "Второй фильм о Бэтмене с легендарным Джокером"},
-    {"title": "Социальная сеть", "year": 2010, "genre": "Драма", "poster": "https://images.pexels.com/photos/5701233/pexels-photo-5701233.jpeg", "desc": "История создания Facebook и его основателя"},
-    {"title": "Лучший стрелок", "year": 1986, "genre": "Боевик", "poster": "https://images.pexels.com/photos/799127/pexels-photo-799127.jpeg", "desc": "История летчика истребителя и его романтичного пути"},
-    {"title": "Лиловые холмы", "year": 2006, "genre": "Драма", "poster": "https://images.pexels.com/photos/799158/pexels-photo-799158.jpeg", "desc": "Трогательная история любви и разлуки"},
-    {"title": "Джанго освобожденный", "year": 2012, "genre": "Боевик", "poster": "https://images.pexels.com/photos/799150/pexels-photo-799150.jpeg", "desc": "Западный боевик о борьбе с рабством"},
-    {"title": "Земля обетованная", "year": 2012, "genre": "Драма", "poster": "https://images.pexels.com/photos/799116/pexels-photo-799116.jpeg", "desc": "История двух семей, связанных газом и экологией"},
-    {"title": "Гренада Испанская", "year": 2011, "genre": "Драма", "poster": "https://images.pexels.com/photos/799137/pexels-photo-799137.jpeg", "desc": "Историческая драма об Испании и её культуре"},
-    {"title": "Мёртвые поэты общества", "year": 1989, "genre": "Драма", "poster": "https://images.pexels.com/photos/799114/pexels-photo-799114.jpeg", "desc": "Вдохновляющая история учителя и его учеников"},
-    {"title": "Миллион Азарова", "year": 2006, "genre": "Триллер", "poster": "https://images.pexels.com/photos/799152/pexels-photo-799152.jpeg", "desc": "История о том, что можно купить за миллион долларов"},
-    {"title": "Выцветший гвоздик", "year": 1992, "genre": "Западный", "poster": "https://images.pexels.com/photos/5701233/pexels-photo-5701233.jpeg", "desc": "Мрачный вестерн про старого стрелка"},
-    {"title": "Холодная гора", "year": 2003, "genre": "Драма", "poster": "https://images.pexels.com/photos/799127/pexels-photo-799127.jpeg", "desc": "История любви и войны в период Гражданской войны"},
-    {"title": "Один дома", "year": 1990, "genre": "Комедия", "poster": "https://images.pexels.com/photos/799158/pexels-photo-799158.jpeg", "desc": "Семейная комедия о мальчике, оставшемся защищать дом"},
-    {"title": "Ловушка для мамы", "year": 1998, "genre": "Комедия", "poster": "https://images.pexels.com/photos/799150/pexels-photo-799150.jpeg", "desc": "Комедия про близнецов, разлученных при рождении"},
-    {"title": "Город грехов", "year": 2005, "genre": "Боевик", "poster": "https://images.pexels.com/photos/799116/pexels-photo-799116.jpeg", "desc": "Нуаровский боевик про преступный город"},
-    {"title": "Любовь в эпоху холеры", "year": 2007, "genre": "Мелодрама", "poster": "https://images.pexels.com/photos/799137/pexels-photo-799137.jpeg", "desc": "История долгой и верной любви через годы"},
-    {"title": "Неспешный танец", "year": 1987, "genre": "Мелодрама", "poster": "https://images.pexels.com/photos/799114/pexels-photo-799114.jpeg", "desc": "Романтическая драма про танцы и любовь"},
-    {"title": "Водный мир", "year": 1995, "genre": "Фантастика", "poster": "https://images.pexels.com/photos/799152/pexels-photo-799152.jpeg", "desc": "Постапокалиптический фантастический боевик"},
-    {"title": "Люди в чёрном", "year": 1997, "genre": "Комедия", "poster": "https://images.pexels.com/photos/5701233/pexels-photo-5701233.jpeg", "desc": "Весёлая комедия про инопланетян и секретных агентов"},
-    {"title": "Парк Юрского периода", "year": 1993, "genre": "Приключения", "poster": "https://images.pexels.com/photos/799127/pexels-photo-799127.jpeg", "desc": "Культовая фантастика про парк динозавров"},
-    {"title": "Челюсти", "year": 1975, "genre": "Ужасы", "poster": "https://images.pexels.com/photos/799158/pexels-photo-799158.jpeg", "desc": "Классический фильм про огромную белую акулу"},
-    {"title": "Как поймать тигра хвостом", "year": 1986, "genre": "Комедия", "poster": "https://images.pexels.com/photos/799150/pexels-photo-799150.jpeg", "desc": "Комедийный боевик про лучших друзей"},
-    {"title": "Крупная деньга", "year": 1983, "genre": "Комедия", "poster": "https://images.pexels.com/photos/799116/pexels-photo-799116.jpeg", "desc": "Комедия про преступление и большие деньги"},
-    {"title": "Ликвидатор", "year": 1988, "genre": "Боевик", "poster": "https://images.pexels.com/photos/799137/pexels-photo-799137.jpeg", "desc": "Боевик про рокера, ставшего киллером"},
-    {"title": "Четыре комнаты", "year": 1995, "genre": "Комедия", "poster": "https://images.pexels.com/photos/799114/pexels-photo-799114.jpeg", "desc": "Нелепая комедия про гостиницу в последнюю ночь года"},
-    {"title": "Диктатор", "year": 1940, "genre": "Комедия", "poster": "https://images.pexels.com/photos/799152/pexels-photo-799152.jpeg", "desc": "Политическая сатира Чарли Чаплина"},
-    {"title": "Дневник Бридджит Джонс", "year": 2001, "genre": "Комедия", "poster": "https://images.pexels.com/photos/5701233/pexels-photo-5701233.jpeg", "desc": "Романтическая комедия про женщину в поисках любви"},
-    {"title": "Ночь музеев", "year": 2006, "genre": "Комедия", "poster": "https://images.pexels.com/photos/799127/pexels-photo-799127.jpeg", "desc": "Семейная комедия про оживающих музейных экспонатов"},
-    {"title": "Аватар", "year": 2009, "genre": "Фантастика", "poster": "https://images.pexels.com/photos/799158/pexels-photo-799158.jpeg", "desc": "Эпическая фантастика про войну за планету"},
-    {"title": "Начало", "year": 2010, "genre": "Фантастика", "poster": "https://images.pexels.com/photos/799150/pexels-photo-799150.jpeg", "desc": "Умный триллер про краже идей из снов"},
-    {"title": "Когда Гарри встретил Салли", "year": 1989, "genre": "Комедия", "poster": "https://images.pexels.com/photos/799116/pexels-photo-799116.jpeg", "desc": "Классическая романтическая комедия про дружбу"},
+   {
+    "title": "Шоу Трумэна",
+    "year": 1998,
+    "genre": "Драма",
+    "poster": "https://images.tmdb.org/t/p/w500/wcZAHMq0dHW0yVSiXG3wk9T8NuS.jpg",
+    "desc": "История человека, жизнь которого - один огромный телевизионный спектакль"
+  },
+  {
+    "title": "Жизнь прекрасна",
+    "year": 1997,
+    "genre": "Драма",
+    "poster": "https://images.tmdb.org/t/p/w500/a8Q0gKwXL4sTY4e2JRqJJe0R9Uf.jpg",
+    "desc": "Отец защищает своего сына от ужасов войны через игру и воображение"
+  },
+  {
+    "title": "Форрест Гамп",
+    "year": 1994,
+    "genre": "Драма",
+    "poster": "https://images.tmdb.org/t/p/w500/h5oK4pZKTBbzYWh5f5GR6nUyJGX.jpg",
+    "desc": "История простого человека, который достиг невероятных высот"
+  },
+  {
+    "title": "Зелёная миля",
+    "year": 1999,
+    "genre": "Драма",
+    "poster": "https://images.tmdb.org/t/p/w500/radBbkxJuMCIgDmH6sIJ3xOIw5N.jpg",
+    "desc": "Исправительная камера и чудо в виде сверхъестественных способностей"
+  },
+  {
+    "title": "Спасение рядового Райана",
+    "year": 1998,
+    "genre": "Боевик",
+    "poster": "https://images.tmdb.org/t/p/w500/3mQm4l3Fb9xP6R8vNPSu6s4RbVq.jpg",
+    "desc": "Эпическая история о спасении солдата во время Второй мировой войны"
+  },
+  {
+    "title": "Бойцовский клуб",
+    "year": 1999,
+    "genre": "Триллер",
+    "poster": "https://images.tmdb.org/t/p/w500/hEv2ovsKl5p3itLVeKyUaO0d04o.jpg",
+    "desc": "Психологический триллер о подпольном клубе бойцов"
+  },
+  {
+    "title": "Матрица",
+    "year": 1999,
+    "genre": "Фантастика",
+    "poster": "https://images.tmdb.org/t/p/w500/vgpXmVaVSUdzqkAcg1aWZbB0Bsb.jpg",
+    "desc": "Революционный фантастический боевик о реальности и иллюзии"
+  },
+  {
+    "title": "Список Шиндлера",
+    "year": 1993,
+    "genre": "Драма",
+    "poster": "https://images.tmdb.org/t/p/w500/sF1U4EUQS8YHUPAzM9QFGpDQi23.jpg",
+    "desc": "История немецкого бизнесмена, спасившего тысячи евреев"
+  },
+  {
+    "title": "Звёздные войны: Эпизод I",
+    "year": 1999,
+    "genre": "Фантастика",
+    "poster": "https://images.tmdb.org/t/p/w500/sblJQR6dYLmA4iZM3fZ8QZKnqFi.jpg",
+    "desc": "Новое начало саги о войне галактик"
+  },
+  {
+    "title": "Титаник",
+    "year": 1997,
+    "genre": "Мелодрама",
+    "poster": "https://images.tmdb.org/t/p/w500/9xjZS2rlWxYGEARQbIcRswroIDe.jpg",
+    "desc": "Эпическая романтическая драма о гибели лайнера"
+  },
+  {
+    "title": "Красота по-американски",
+    "year": 1999,
+    "genre": "Драма",
+    "poster": "https://images.tmdb.org/t/p/w500/lj03JWZVYDRmXQDwCYf3LST6zKE.jpg",
+    "desc": "Тёмная комедия о мечтах и идеалах в пригороде"
+  },
+  {
+    "title": "Хороший, плохой, злой",
+    "year": 1966,
+    "genre": "Боевик",
+    "poster": "https://images.tmdb.org/t/p/w500/kGLuv0OWeSYXaDn7tDLwQF24xNr.jpg",
+    "desc": "Культовый вестерн про три стрелка в поисках сокровища"
+  },
+  {
+    "title": "Пульп Фикшн",
+    "year": 1994,
+    "genre": "Триллер",
+    "poster": "https://images.tmdb.org/t/p/w500/d8duYyyC9J5T3OMsDNxoXy7AzM2.jpg",
+    "desc": "Нелинейное повествование о криминальной жизни Лос-Анджелеса"
+  },
+  {
+    "title": "Молчание ягнят",
+    "year": 1991,
+    "genre": "Триллер",
+    "poster": "https://images.tmdb.org/t/p/w500/lqnkQg27xzj5zEMWIGDyamCs78V.jpg",
+    "desc": "Психологический триллер про охоту на серийного убийцу"
+  },
+  {
+    "title": "Назад в будущее",
+    "year": 1985,
+    "genre": "Комедия",
+    "poster": "https://images.tmdb.org/t/p/w500/w0OMwQ67BC2I3yxn91jMmqKGP2D.jpg",
+    "desc": "Приключенческая комедия о путешествиях во времени"
+  },
+  {
+    "title": "Пираты Карибского моря",
+    "year": 2003,
+    "genre": "Приключения",
+    "poster": "https://images.tmdb.org/t/p/w500/tkt7b9G3MC2j0FkyMb1dBG6MxPf.jpg",
+    "desc": "Веселое приключение капитана Джека Воробья"
+  },
+  {
+    "title": "Великий Гэтсби",
+    "year": 2013,
+    "genre": "Драма",
+    "poster": "https://images.tmdb.org/t/p/w500/fpVcjqoKXRVHlWpbiKLEeA6XC7S.jpg",
+    "desc": "Роман о любви, амбициях и американской мечте"
+  },
+  {
+    "title": "Интерстеллар",
+    "year": 2014,
+    "genre": "Фантастика",
+    "poster": "https://images.tmdb.org/t/p/w500/nv5yFk2kZo6jjc2gc3umaGmel8Z.jpg",
+    "desc": "Космическая эпопея о спасении человечества"
+  },
+  {
+    "title": "Темный рыцарь",
+    "year": 2008,
+    "genre": "Боевик",
+    "poster": "https://images.tmdb.org/t/p/w500/1hCw8kSUIKd9yb1PLV2yAGG7vIY.jpg",
+    "desc": "Второй фильм о Бэтмене с легендарным Джокером"
+  },
+  {
+    "title": "Социальная сеть",
+    "year": 2010,
+    "genre": "Драма",
+    "poster": "https://images.tmdb.org/t/p/w500/gzJnMEMnWay6UWuKvnEfM9VZeI9.jpg",
+    "desc": "История создания Facebook и его основателя"
+  },
+  {
+    "title": "Лучший стрелок",
+    "year": 1986,
+    "genre": "Боевик",
+    "poster": "https://images.tmdb.org/t/p/w500/xGKNcXc0M8cVERYV7tVrVgkn5ZL.jpg",
+    "desc": "История летчика истребителя и его романтичного пути"
+  },
+  {
+    "title": "Лиловые холмы",
+    "year": 2006,
+    "genre": "Драма",
+    "poster": "https://images.tmdb.org/t/p/w500/zfD8IK7f6sWQgWXm0L3k0m3FqSp.jpg",
+    "desc": "Трогательная история любви и разлуки"
+  },
+  {
+    "title": "Джанго освобожденный",
+    "year": 2012,
+    "genre": "Боевик",
+    "poster": "https://images.tmdb.org/t/p/w500/v8ZaC0QrMLKqHSi2X0HMXVK5X9M.jpg",
+    "desc": "Западный боевик о борьбе с рабством"
+  },
+  {
+    "title": "Земля обетованная",
+    "year": 2012,
+    "genre": "Драма",
+    "poster": "https://images.tmdb.org/t/p/w500/cV6tNFkMzR6dzp2Cm6v1oeI1sR0.jpg",
+    "desc": "История двух семей, связанных газом и экологией"
+  },
+  {
+    "title": "Гренада Испанская",
+    "year": 2011,
+    "genre": "Драма",
+    "poster": "https://images.tmdb.org/t/p/w500/8NNbHMFYcULkfgsCa7bYq4TQ4UO.jpg",
+    "desc": "Историческая драма об Испании и её культуре"
+  },
+  {
+    "title": "Мёртвые поэты общества",
+    "year": 1989,
+    "genre": "Драма",
+    "poster": "https://images.tmdb.org/t/p/w500/2l8Rgc2V7o81GKD8dMD9dHmcbJh.jpg",
+    "desc": "Вдохновляющая история учителя и его учеников"
+  },
+  {
+    "title": "Миллион Азарова",
+    "year": 2006,
+    "genre": "Триллер",
+    "poster": "https://images.tmdb.org/t/p/w500/5OcVb7x1zKzLfPjGwNy0F7XZQTB.jpg",
+    "desc": "История о том, что можно купить за миллион долларов"
+  },
+  {
+    "title": "Выцветший гвоздик",
+    "year": 1992,
+    "genre": "Западный",
+    "poster": "https://images.tmdb.org/t/p/w500/7bnJAyGxNRWZ8YxqgQkuOI3ZTzi.jpg",
+    "desc": "Мрачный вестерн про старого стрелка"
+  },
+  {
+    "title": "Холодная гора",
+    "year": 2003,
+    "genre": "Драма",
+    "poster": "https://images.tmdb.org/t/p/w500/aJyJDNz79B4w5r8QVLpIozY7Ppf.jpg",
+    "desc": "История любви и войны в период Гражданской войны"
+  },
+  {
+    "title": "Один дома",
+    "year": 1990,
+    "genre": "Комедия",
+    "poster": "https://images.tmdb.org/t/p/w500/r1bKEBUgJDJ6dIwBN2L6oG8BYtX.jpg",
+    "desc": "Семейная комедия о мальчике, оставшемся защищать дом"
+  },
+  {
+    "title": "Ловушка для мамы",
+    "year": 1998,
+    "genre": "Комедия",
+    "poster": "https://images.tmdb.org/t/p/w500/6K5yJvHVLk2p6dVBOHlzJ1tqMnl.jpg",
+    "desc": "Комедия про близнецов, разлученных при рождении"
+  },
+  {
+    "title": "Город грехов",
+    "year": 2005,
+    "genre": "Боевик",
+    "poster": "https://images.tmdb.org/t/p/w500/jJJqVjvJStvVb9eoSQxP4S3K3Vy.jpg",
+    "desc": "Нуаровский боевик про преступный город"
+  },
+  {
+    "title": "Любовь в эпоху холеры",
+    "year": 2007,
+    "genre": "Мелодрама",
+    "poster": "https://images.tmdb.org/t/p/w500/6RvHcZKd7ZFYLk5k9blVPL6TqHR.jpg",
+    "desc": "История долгой и верной любви через годы"
+  },
+  {
+    "title": "Неспешный танец",
+    "year": 1987,
+    "genre": "Мелодрама",
+    "poster": "https://images.tmdb.org/t/p/w500/cXiN4/nv7z5lZuv2l5h5gF6k8lF9w.jpg",
+    "desc": "Романтическая драма про танцы и любовь"
+  },
+  {
+    "title": "Водный мир",
+    "year": 1995,
+    "genre": "Фантастика",
+    "poster": "https://images.tmdb.org/t/p/w500/9mqHSs9L4pGzgmQsRSxvBT6bnv.jpg",
+    "desc": "Постапокалиптический фантастический боевик"
+  },
+  {
+    "title": "Люди в чёрном",
+    "year": 1997,
+    "genre": "Комедия",
+    "poster": "https://images.tmdb.org/t/p/w500/z1p34vh_XGMElephic263GDwHu4.jpg",
+    "desc": "Весёлая комедия про инопланетян и секретных агентов"
+  },
+  {
+    "title": "Парк Юрского периода",
+    "year": 1993,
+    "genre": "Приключения",
+    "poster": "https://images.tmdb.org/t/p/w500/WXZ1O0nYL9T2AehM8YGOmtEj2Ov.jpg",
+    "desc": "Культовая фантастика про парк динозавров"
+  },
+  {
+    "title": "Челюсти",
+    "year": 1975,
+    "genre": "Ужасы",
+    "poster": "https://images.tmdb.org/t/p/w500/UKnrHaH7NM2Mxk4iN3LGYoiOODB.jpg",
+    "desc": "Классический фильм про огромную белую акулу"
+  },
+  {
+    "title": "Как поймать тигра хвостом",
+    "year": 1986,
+    "genre": "Комедия",
+    "poster": "https://images.tmdb.org/t/p/w500/h5z3v1xnFJKLvKaWslDIWLDJNKj.jpg",
+    "desc": "Комедийный боевик про лучших друзей"
+  },
+  {
+    "title": "Крупная деньга",
+    "year": 1983,
+    "genre": "Комедия",
+    "poster": "https://images.tmdb.org/t/p/w500/rF4dUvO0Yx3FFNjVYCKhNlnVrj2.jpg",
+    "desc": "Комедия про преступление и большие деньги"
+  },
+  {
+    "title": "Ликвидатор",
+    "year": 1988,
+    "genre": "Боевик",
+    "poster": "https://images.tmdb.org/t/p/w500/u1nzqWfqR5c2Ly8Y6XJxV8i3Dd0.jpg",
+    "desc": "Боевик про рокера, ставшего киллером"
+  },
+  {
+    "title": "Четыре комнаты",
+    "year": 1995,
+    "genre": "Комедия",
+    "poster": "https://images.tmdb.org/t/p/w500/yOrVV2yA9x2Q7OQmYFdz2qLpCg.jpg",
+    "desc": "Нелепая комедия про гостиницу в последнюю ночь года"
+  },
+  {
+    "title": "Диктатор",
+    "year": 1940,
+    "genre": "Комедия",
+    "poster": "https://images.tmdb.org/t/p/w500/kI0GX3O2E0IhLbH3T5mVJiLrMSm.jpg",
+    "desc": "Политическая сатира Чарли Чаплина"
+  },
+  {
+    "title": "Дневник Бридджит Джонс",
+    "year": 2001,
+    "genre": "Комедия",
+    "poster": "https://images.tmdb.org/t/p/w500/3VlC7nYuI9K6R9P7rRYVDIY16Hc.jpg",
+    "desc": "Романтическая комедия про женщину в поисках любви"
+  },
+  {
+    "title": "Ночь музеев",
+    "year": 2006,
+    "genre": "Комедия",
+    "poster": "https://images.tmdb.org/t/p/w500/4r0kP63sFJ7fBL7hqcHMk3sT73M.jpg",
+    "desc": "Семейная комедия про оживающих музейных экспонатов"
+  },
+  {
+    "title": "Аватар",
+    "year": 2009,
+    "genre": "Фантастика",
+    "poster": "https://images.tmdb.org/t/p/w500/6ELCZqJwQAe1UGvzo1nH0nNcY1w.jpg",
+    "desc": "Эпическая фантастика про войну за планету"
+  },
+  {
+    "title": "Начало",
+    "year": 2010,
+    "genre": "Фантастика",
+    "poster": "https://images.tmdb.org/t/p/w500/9gk7adHYeDMNNGY3i1Lpg8gECFd.jpg",
+    "desc": "Умный триллер про краже идей из снов"
+  },
+  {
+    "title": "Когда Гарри встретил Салли",
+    "year": 1989,
+    "genre": "Комедия",
+    "poster": "https://images.tmdb.org/t/p/w500/2xw0GnHVxX6q5xqTlkzgGmkPVKV.jpg",
+    "desc": "Классическая романтическая комедия про дружбу"
+  },
+  {
+    "title": "Спасение",
+    "year": 1994,
+    "genre": "Драма",
+    "poster": "https://images.tmdb.org/t/p/w500/xAKMj8MTvfuP5vvrNEFOqHo47J8.jpg",
+    "desc": "История узника, обретшего надежду и свободу"
+  },
+  {
+    "title": "Рокки",
+    "year": 1976,
+    "genre": "Драма",
+    "poster": "https://images.tmdb.org/t/p/w500/aPJt2EVDQD8P0Tby3b4t0am47xs.jpg",
+    "desc": "Вдохновляющая история борца, ставшего чемпионом"
+  }
 ]
 
 reviews_templates = {
