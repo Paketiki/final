@@ -32,6 +32,15 @@ def get_user_by_email(email: str) -> Optional[Dict]:
     conn.close()
     return dict_from_row(user)
 
+def get_user_by_username(username: str) -> Optional[Dict]:
+    """Get user by username"""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+    user = cursor.fetchone()
+    conn.close()
+    return dict_from_row(user)
+
 def get_user_by_id(user_id: int) -> Optional[Dict]:
     conn = get_db()
     cursor = conn.cursor()
