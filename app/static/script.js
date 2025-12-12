@@ -231,20 +231,22 @@ function renderFilms() {
 
 async function loadMovieStatsForCard(mid) {
   try {
-    const [rating, reviews] = await Promise.all([
-      apiCall('GET', `/movies/${mid}/rating-stats`),
-      apiCall('GET', `/movies/${mid}/reviews`)
-    ]);
+    const reviews = await apiCall('GET', `/movies/${mid}/reviews`);
     
     const ratingEl = $(`#rating-${mid}`);
     const statsEl = $(`#stats-${mid}`);
     if (!ratingEl || !statsEl) return;
     
-    // Rating
-    if (rating.average && rating.count > 0) {
+    // Вычислить средний рейтинг из рецензий
+    const ratings = reviews
+      .filter(r => r.rating)
+      .map(r => r.rating);
+    
+    if (ratings.length > 0) {
+      const avg = ratings.reduce((sum, r) => sum + r, 0) / ratings.length;
       ratingEl.innerHTML = `
-        <span class="kv-film-rating">${rating.average.toFixed(1)}</span>
-        <span class="kv-film-rating-count">(${rating.count})</span>
+        <span class="kv-film-rating">${avg.toFixed(1)}</span>
+        <span class="kv-film-rating-count">(${ratings.length})</span>
       `;
     } else {
       ratingEl.innerHTML = '<span class="kv-film-no-rating">Нет оценок</span>';
@@ -264,7 +266,6 @@ async function openMovie(mid) {
   try {
     const movie = await apiCall('GET', `/movies/${mid}`);
     const reviews = await apiCall('GET', `/movies/${mid}/reviews?approved_only=false`);
-    const rating = await apiCall('GET', `/movies/${mid}/rating-stats`);
 
     const modal = $('#movieModal');
     const canWrite = currentUser && !currentUser.is_guest;
@@ -274,6 +275,14 @@ async function openMovie(mid) {
     const genre = movie.genre || '';
     const year = movie.year || '';
     const desc = movie.description || 'Нет описания';
+
+    // Вычислить средний рейтинг из рецензий
+    const ratings = reviews
+      .filter(r => r.rating)
+      .map(r => r.rating);
+    const avgRating = ratings.length > 0 
+      ? (ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(1)
+      : null;
 
     modal.innerHTML = `
       <div class="kv-modal-backdrop"></div>
@@ -295,7 +304,7 @@ async function openMovie(mid) {
             <p class="kv-movie-desc">${desc}</p>
             <div class="kv-movie-rating-block">
               <div class="kv-movie-rating-main">
-                <div class="kv-movie-rating-value">${rating.average ? rating.average.toFixed(1) : '—'}</div>
+                <div class="kv-movie-rating-value">${avgRating || '—'}</div>
                 <div class="kv-movie-rating-label">средний рейтинг</div>
               </div>
             </div>
@@ -320,7 +329,7 @@ async function openMovie(mid) {
                 ${!reviews.length ? '<div class="kv-empty">Нет рецензий</div>' : reviews.map(r => `
                   <div class="kv-review">
                     <div class="kv-review-top">
-                      <span class="kv-review-author">${new Date(r.created_at).toLocaleDateString('ru-RU')}</span>
+                      <span class="kv-review-author">${r.username ? r.username : 'Гость'}</span>
                       ${r.rating ? `<span class="kv-review-rating">${r.rating} ★</span>` : ''}
                     </div>
                     <p class="kv-review-text">${r.text}</p>
@@ -406,12 +415,31 @@ function renderProfile() {
   }
 }
 
-function updateCounters() {
+async function updateCounters() {
   const rc = $('#ratingCount');
   const rwc = $('#reviewCount');
-  const count = Array.isArray(allMovies) ? allMovies.length : 0;
-  if (rc) rc.textContent = count;
-  if (rwc) rwc.textContent = count;
+  
+  try {
+    // Получить всех фильмов
+    const movies = await apiCall('GET', '/movies/');
+    const moviesCount = Array.isArray(movies) ? movies.length : 0;
+    
+    // Получить все рецензии (примерная оценка)
+    let reviewsCount = 0;
+    for (const m of (Array.isArray(movies) ? movies : [])) {
+      const reviews = await apiCall('GET', `/movies/${m.id}/reviews`);
+      reviewsCount += (Array.isArray(reviews) ? reviews.length : 0);
+    }
+    
+    if (rc) rc.textContent = moviesCount;
+    if (rwc) rwc.textContent = reviewsCount;
+  } catch (e) {
+    console.error('Counter update error:', e);
+    // Fallback: использовать текущие фильмы
+    const count = Array.isArray(allMovies) ? allMovies.length : 0;
+    if (rc) rc.textContent = count;
+    if (rwc) rwc.textContent = count;
+  }
 }
 
 // ===== Init =====
