@@ -107,7 +107,7 @@ def create_review(movie_id: int, user_id: int, text: str, rating: int = None) ->
 def get_review_by_id(review_id: int) -> Optional[Dict]:
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM reviews WHERE id = ?", (review_id,))
+    cursor.execute("SELECT r.*, u.username FROM reviews r LEFT JOIN users u ON r.user_id = u.id WHERE r.id = ?", (review_id,))
     review = cursor.fetchone()
     conn.close()
     return dict_from_row(review)
@@ -116,9 +116,15 @@ def get_movie_reviews(movie_id: int, approved_only: bool = True) -> List[Dict]:
     conn = get_db()
     cursor = conn.cursor()
     if approved_only:
-        cursor.execute("SELECT * FROM reviews WHERE movie_id = ? AND approved = 1 ORDER BY created_at DESC", (movie_id,))
+        cursor.execute(
+            "SELECT r.*, u.username FROM reviews r LEFT JOIN users u ON r.user_id = u.id WHERE r.movie_id = ? AND r.approved = 1 ORDER BY r.created_at DESC", 
+            (movie_id,)
+        )
     else:
-        cursor.execute("SELECT * FROM reviews WHERE movie_id = ? ORDER BY created_at DESC", (movie_id,))
+        cursor.execute(
+            "SELECT r.*, u.username FROM reviews r LEFT JOIN users u ON r.user_id = u.id WHERE r.movie_id = ? ORDER BY r.created_at DESC", 
+            (movie_id,)
+        )
     reviews = cursor.fetchall()
     conn.close()
     return dicts_from_rows(reviews)
