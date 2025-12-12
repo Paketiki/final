@@ -376,6 +376,7 @@ async function submitReview(mid) {
     });
     alert('Отправлено!');
     openMovie(mid);
+    updateCounters();
   } catch (e) {
     alert('Ошибка: ' + e.message);
   }
@@ -420,25 +421,17 @@ async function updateCounters() {
   const rwc = $('#reviewCount');
   
   try {
-    // Получить всех фильмов
-    const movies = await apiCall('GET', '/movies/');
-    const moviesCount = Array.isArray(movies) ? movies.length : 0;
+    // Получить статистику сайта с одного запроса
+    const stats = await apiCall('GET', '/movies/stats');
     
-    // Получить все рецензии из БД
-    let reviewsCount = 0;
-    for (const m of (Array.isArray(movies) ? movies : [])) {
-      const reviews = await apiCall('GET', `/movies/${m.id}/reviews`);
-      reviewsCount += (Array.isArray(reviews) ? reviews.length : 0);
-    }
-    
-    if (rc) rc.textContent = moviesCount;
-    if (rwc) rwc.textContent = reviewsCount;
+    if (rc) rc.textContent = stats.movies_count || 0;
+    if (rwc) rwc.textContent = stats.reviews_count || 0;
   } catch (e) {
     console.error('Counter update error:', e);
     // Fallback: использовать текущие фильмы
     const count = Array.isArray(allMovies) ? allMovies.length : 0;
     if (rc) rc.textContent = count;
-    if (rwc) rwc.textContent = count;
+    if (rwc) rwc.textContent = 0;
   }
 }
 
