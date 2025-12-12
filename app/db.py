@@ -49,12 +49,13 @@ def get_user_by_id(user_id: int) -> Optional[Dict]:
     conn.close()
     return dict_from_row(user)
 
-def create_user(email: str, password: str, username: str) -> Dict:
+def create_user(email: str, password: str, username: str, is_moderator: bool = False) -> Dict:
+    """Create user with optional moderator flag"""
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO users (email, password, username) VALUES (?, ?, ?)",
-        (email, password, username)
+        "INSERT INTO users (email, password, username, is_moderator) VALUES (?, ?, ?, ?)",
+        (email, password, username, is_moderator)
     )
     conn.commit()
     user_id = cursor.lastrowid
