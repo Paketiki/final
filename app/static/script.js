@@ -57,7 +57,7 @@ async function login() {
     saveLS(LS_KEYS.CURRENT_USER, currentUser);
     renderUserArea();
     renderProfile();
-    alert('Вывод!');
+    alert('Успешный вход!');
     $('#loginEmail').value = '';
     $('#loginPassword').value = '';
   } catch (e) {
@@ -81,7 +81,7 @@ async function register() {
     saveLS(LS_KEYS.CURRENT_USER, currentUser);
     renderUserArea();
     renderProfile();
-    alert('Регистрация спешна!');
+    alert('Регистрация успешна!');
     $('#registerEmail').value = '';
     $('#registerPassword').value = '';
     $('#registerUsername').value = '';
@@ -115,27 +115,19 @@ function logout() {
 async function loadMovies() {
   try {
     const data = await apiCall('GET', '/movies/');
-    console.log('Loaded movies data:', data);
-    
-    // Ensure it's always an array
     if (Array.isArray(data)) {
       allMovies = data;
     } else if (data && Array.isArray(data.items)) {
       allMovies = data.items;
     } else if (data && typeof data === 'object') {
-      // Maybe it's a single object, wrap it
       allMovies = [data];
     } else {
       allMovies = [];
-      console.error('Unexpected response format:', data);
     }
-    
-    console.log('Processed allMovies:', allMovies);
     renderFilms();
     renderGenres();
     updateCounters();
   } catch (e) {
-    console.error('Load error:', e);
     alert('Ошибка загрузки: ' + e.message);
     allMovies = [];
     renderFilms();
@@ -176,7 +168,6 @@ function getFiltered() {
   if (currentGenre !== 'all') {
     list = list.filter(m => m && m.genre === currentGenre);
   }
-  // Sort
   if (currentSort === 'title') {
     list.sort((a, b) => (a.title || '').localeCompare(b.title || '', 'ru'));
   } else if (currentSort === 'year') {
@@ -202,36 +193,80 @@ function renderFilms() {
     if (!m) return;
     const card = document.createElement('article');
     card.className = 'kv-film-card';
+    
+    const posterUrl = m.poster_url || '';
+    const title = m.title || 'Без названия';
+    const genre = m.genre || '';
+    const year = m.year || '';
+    
     card.innerHTML = `
       <div class="kv-film-poster-wrap">
-        <img src="${m.poster_url || ''}" alt="${m.title || 'Без названия'}" class="kv-film-poster">
-        <button class="kv-fav-btn">★</button>
+        <img src="${posterUrl}" alt="${title}" class="kv-film-poster">
+        <button class="kv-fav-btn">☆</button>
       </div>
       <div class="kv-film-body">
-        <h3 class="kv-film-title">${m.title || 'Без названия'}</h3>
+        <h3 class="kv-film-title">${title}</h3>
         <div class="kv-film-meta">
-          <span>${m.genre || ''}</span>
-          <span>${m.year || ''}</span>
+          <span>${genre}</span>
+          <span>•</span>
+          <span>${year}</span>
+        </div>
+        <div class="kv-film-rating-line" id="rating-${m.id}">
+          <span class="kv-film-no-rating">Загрузка...</span>
         </div>
       </div>
     `;
+    
     card.onclick = e => {
       if (e.target.closest('.kv-fav-btn')) return;
       openMovie(m.id);
     };
     cont.appendChild(card);
+    
+    // Load rating async
+    loadMovieRatingForCard(m.id);
   });
+}
+
+async function loadMovieRatingForCard(mid) {
+  try {
+    const rating = await apiCall('GET', `/movies/${mid}/rating-stats`);
+    const reviews = await apiCall('GET', `/movies/${mid}/reviews`);
+    const el = $(`#rating-${mid}`);
+    if (!el) return;
+    
+    if (rating.average && rating.count > 0) {
+      el.innerHTML = `
+        <span class="kv-film-rating">${rating.average.toFixed(1)} ★</span>
+        <span class="kv-film-rating-count">(${rating.count})</span>
+      `;
+    } else {
+      el.innerHTML = '<span class="kv-film-no-rating">Нет оценок</span>';
+    }
+    
+    if (reviews.length > 0) {
+      el.innerHTML += ` • <span class="kv-film-stats">${reviews.length} рец.</span>`;
+    }
+  } catch (e) {
+    console.error('Rating load error:', e);
+  }
 }
 
 // ===== Modal =====
 async function openMovie(mid) {
   try {
     const movie = await apiCall('GET', `/movies/${mid}`);
-    const reviews = await apiCall('GET', `/movies/${mid}/reviews`);
+    const reviews = await apiCall('GET', `/movies/${mid}/reviews?approved_only=false`);
     const rating = await apiCall('GET', `/movies/${mid}/rating-stats`);
 
     const modal = $('#movieModal');
     const canWrite = currentUser && !currentUser.is_guest;
+
+    const posterUrl = movie.poster_url || '';
+    const title = movie.title || 'Без названия';
+    const genre = movie.genre || '';
+    const year = movie.year || '';
+    const desc = movie.description || 'Нет описания';
 
     modal.innerHTML = `
       <div class="kv-modal-backdrop"></div>
@@ -240,24 +275,26 @@ async function openMovie(mid) {
         <div class="kv-movie-modal-layout">
           <div class="kv-movie-modal-left">
             <div class="kv-movie-poster-wrap">
-              <img src="${movie.poster_url || ''}" class="kv-movie-poster">
+              <img src="${posterUrl}" class="kv-movie-poster">
             </div>
           </div>
           <div class="kv-movie-modal-right">
-            <h2>${movie.title || 'Без названия'}</h2>
+            <h2>${title}</h2>
             <div class="kv-movie-meta">
-              <span>${movie.genre || ''}</span>
-              <span>${movie.year || ''}</span>
+              <span>${genre}</span>
+              <span>•</span>
+              <span>${year}</span>
             </div>
-            <p class="kv-movie-desc">${movie.description || 'Нет описания'}</p>
+            <p class="kv-movie-desc">${desc}</p>
             <div class="kv-movie-rating-block">
               <div class="kv-movie-rating-main">
-                <div class="kv-movie-rating-value">${rating.average ? rating.average.toFixed(1) : '—'} / 5</div>
+                <div class="kv-movie-rating-value">${rating.average ? rating.average.toFixed(1) : '—'}</div>
+                <div class="kv-movie-rating-label">средний рейтинг</div>
               </div>
             </div>
             ${canWrite ? `
               <div class="kv-rating-form">
-                <label class="kv-rating-label">Оценка:</label>
+                <label class="kv-rating-label">Ваша оценка:</label>
                 <div class="kv-rating-stars">
                   ${[1,2,3,4,5].map(i => `<button class="kv-rating-star" data-val="${i}">★</button>`).join('')}
                 </div>
@@ -265,18 +302,19 @@ async function openMovie(mid) {
             ` : ''}
             ${canWrite ? `
               <div class="kv-review-form">
-                <textarea id="reviewText" placeholder="Ваше мнение..." style="min-height: 60px;"></textarea>
-                <button class="kv-btn kv-btn-primary" onclick="submitReview(${mid})" style="width: 100%;">Oтправить</button>
+                <textarea id="reviewText" placeholder="Поделитесь своим мнением..." style="min-height: 60px;"></textarea>
+                <button class="kv-btn kv-btn-primary" onclick="submitReview(${mid})" style="width: 100%;">Отправить</button>
+                <div class="kv-review-note">Ваша рецензия будет проверена модератором</div>
               </div>
             ` : ''}
             <div class="kv-review-section">
               <div class="kv-review-section-title">Рецензии (${reviews.length})</div>
               <div class="kv-review-list">
-                ${!reviews.length ? '<div class="kv-empty">Нет</div>' : reviews.map(r => `
+                ${!reviews.length ? '<div class="kv-empty">Нет рецензий</div>' : reviews.map(r => `
                   <div class="kv-review">
                     <div class="kv-review-top">
                       <span class="kv-review-author">${new Date(r.created_at).toLocaleDateString('ru-RU')}</span>
-                      ${r.rating ? `<span class="kv-review-rating">${r.rating}★</span>` : ''}
+                      ${r.rating ? `<span class="kv-review-rating">${r.rating} ★</span>` : ''}
                     </div>
                     <p class="kv-review-text">${r.text}</p>
                   </div>
@@ -299,7 +337,7 @@ async function openMovie(mid) {
           try {
             await apiCall('POST', `/movies/${mid}/ratings?user_id=${currentUser.id}`, { value: val });
             alert('Оценка сохранена');
-            openMovie(mid); // Refresh
+            openMovie(mid);
           } catch (e) {
             alert('Ошибка: ' + e.message);
           }
@@ -321,7 +359,7 @@ async function submitReview(mid) {
       rating: null,
     });
     alert('Отправлено!');
-    openMovie(mid); // Refresh
+    openMovie(mid);
   } catch (e) {
     alert('Ошибка: ' + e.message);
   }
