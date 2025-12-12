@@ -47,18 +47,18 @@ async function apiCall(method, endpoint, data = null) {
 
 // ===== Auth =====
 async function login() {
-  const email = $('#loginEmail').value.trim();
+  const username = $('#loginUsername').value.trim();
   const pwd = $('#loginPassword').value.trim();
-  if (!email || !pwd) return alert('Заполните все поля');
+  if (!username || !pwd) return alert('Заполните все поля');
 
   try {
-    const user = await apiCall('POST', '/users/login', { email, password: pwd });
+    const user = await apiCall('POST', '/users/login', { username, password: pwd });
     currentUser = user;
     saveLS(LS_KEYS.CURRENT_USER, currentUser);
     renderUserArea();
     renderProfile();
     alert('Успешный вход!');
-    $('#loginEmail').value = '';
+    $('#loginUsername').value = '';
     $('#loginPassword').value = '';
   } catch (e) {
     alert('Ошибка: ' + e.message);
@@ -128,7 +128,7 @@ async function loadMovies() {
     renderGenres();
     updateCounters();
   } catch (e) {
-    alert('Ошибка загрузки: ' + e.message);
+    alert('Ошибка загружки: ' + e.message);
     allMovies = [];
     renderFilms();
     renderGenres();
@@ -212,7 +212,7 @@ function renderFilms() {
           <span>${genre}</span>
         </div>
         <div class="kv-film-rating-line" id="rating-${m.id}">
-          <span class="kv-film-no-rating">Загрузка...</span>
+          <span class="kv-film-no-rating">Загружка...</span>
         </div>
         <div class="kv-film-stats" id="stats-${m.id}"></div>
       </div>
@@ -424,7 +424,7 @@ async function updateCounters() {
     const movies = await apiCall('GET', '/movies/');
     const moviesCount = Array.isArray(movies) ? movies.length : 0;
     
-    // Получить все рецензии (примерная оценка)
+    // Получить все рецензии из БД
     let reviewsCount = 0;
     for (const m of (Array.isArray(movies) ? movies : [])) {
       const reviews = await apiCall('GET', `/movies/${m.id}/reviews`);
