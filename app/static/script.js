@@ -38,6 +38,8 @@ function loadFromLS(key, fallback) {
 // ===== API Wrapper =====
 async function apiCall(method, endpoint, data = null) {
   const url = `${API_BASE}${endpoint}`;
+  console.log(`[API] ${method} ${url}`);
+  
   const options = {
     method,
     headers: {
@@ -51,13 +53,15 @@ async function apiCall(method, endpoint, data = null) {
 
   try {
     const response = await fetch(url, options);
+    const responseData = await response.json();
+    
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.detail || `HTTP ${response.status}`);
+      throw new Error(responseData.detail || `HTTP ${response.status}`);
     }
-    return await response.json();
+    
+    return responseData;
   } catch (error) {
-    console.error('API Error:', error);
+    console.error('[API Error]', error);
     throw error;
   }
 }
@@ -111,7 +115,7 @@ async function login() {
     saveToLS(LS_KEYS.CURRENT_USER, currentUser);
     renderUserArea();
     renderProfileSection();
-    showSuccess('Успешный воход!');
+    showSuccess('Успешный вход!');
     $('#loginEmail').value = '';
     $('#loginPassword').value = '';
   } catch (error) {
@@ -145,10 +149,24 @@ function loginAsGuest() {
 // ===== Movie Functions =====
 async function loadMovies() {
   try {
-    movies = await apiCall('GET', '/movies/');
+    console.log('Loading movies...');
+    const data = await apiCall('GET', '/movies/');
+    console.log('API response:', data);
+    
+    // гарантируем, что movies всегда массив
+    if (Array.isArray(data)) {
+      movies = data;
+    } else if (data && Array.isArray(data.items)) {
+      movies = data.items;
+    } else {
+      movies = [];
+      console.error('Unexpected movies payload:', data);
+    }
+    console.log('Movies set to:', movies);
     renderFilmList();
     updateCounters();
   } catch (error) {
+    console.error('ERROR in loadMovies:', error);
     showError('Ошибка загрузки фильмов: ' + error.message);
   }
 }
@@ -157,13 +175,14 @@ async function getMovieDetails(movieId) {
   try {
     return await apiCall('GET', `/movies/${movieId}`);
   } catch (error) {
-    showError('Ошибка загружки фильма');
+    showError('Ошибка загрузки фильма');
     return null;
   }
 }
 
 function getGenres() {
   const set = new Set();
+  if (!Array.isArray(movies)) return ['all'];
   movies.forEach((m) => set.add(m.genre));
   return ['all', ...Array.from(set).sort()];
 }
@@ -232,10 +251,11 @@ function renderFilmList() {
       openMovieModal(movie.id);
     });
 
+    const posterUrl = movie.poster_url || 'https://via.placeholder.com/220x330?text=No+Image';
     card.innerHTML = `
       <div class="kv-film-poster-wrap">
-        <img src="${movie.poster_url || 'https://via.placeholder.com/220x330?text=No+Image'}" alt="${movie.title}" class="kv-film-poster">
-        <button class="kv-fav-btn" data-movie-id="${movie.id}">\u2605</button>
+        <img src="${posterUrl}" alt="${movie.title}" class="kv-film-poster">
+        <button class="kv-fav-btn" data-movie-id="${movie.id}">★</button>
       </div>
       <div class="kv-film-body">
         <h3 class="kv-film-title">${movie.title}</h3>
@@ -274,14 +294,16 @@ async function openMovieModal(movieId) {
   const canRate = currentUser && !currentUser.isGuest;
   const canReview = currentUser && !currentUser.isGuest;
 
+  const posterUrl = movie.poster_url || 'https://via.placeholder.com/180x270?text=No+Image';
+  
   modal.innerHTML = `
     <div class="kv-modal-backdrop"></div>
     <div class="kv-modal-dialog kv-modal-dialog-wide">
-      <button class="kv-modal-close">\u2715</button>
+      <button class="kv-modal-close">✕</button>
       <div class="kv-movie-modal-layout">
         <div class="kv-movie-modal-left">
           <div class="kv-movie-poster-wrap">
-            <img src="${movie.poster_url || 'https://via.placeholder.com/180x270?text=No+Image'}" alt="${movie.title}" class="kv-movie-poster">
+            <img src="${posterUrl}" alt="${movie.title}" class="kv-movie-poster">
           </div>
         </div>
         <div class="kv-movie-modal-right">
@@ -301,7 +323,7 @@ async function openMovieModal(movieId) {
             <div class="kv-rating-form">
               <div class="kv-rating-label">Ваша оценка:</div>
               <div class="kv-rating-stars" id="ratingStars">
-                ${[1, 2, 3, 4, 5].map(i => `<button class="kv-rating-star" data-value="${i}">\u2605</button>`).join('')}
+                ${[1, 2, 3, 4, 5].map(i => `<button class="kv-rating-star" data-value="${i}">★</button>`).join('')}
               </div>
             </div>
           ` : ''}
@@ -372,7 +394,7 @@ async function loadMovieReviews(movieId) {
     const container = $('#reviewsList');
     if (!container) return;
 
-    if (reviews.length === 0) {
+    if (!reviews || reviews.length === 0) {
       container.innerHTML = '<div class="kv-empty">Нет рецензий</div>';
       return;
     }
@@ -383,7 +405,7 @@ async function loadMovieReviews(movieId) {
       <div class="kv-review">
         <div class="kv-review-top">
           <span class="kv-review-author">Время: ${new Date(r.created_at).toLocaleDateString('ru-RU')}</span>
-          <span class="kv-review-rating">${r.rating ? r.rating + ' \u2605' : ''}</span>
+          <span class="kv-review-rating">${r.rating ? r.rating + ' ★' : ''}</span>
         </div>
         <p class="kv-review-text">${r.text}</p>
       </div>
@@ -556,6 +578,7 @@ function setupEventListeners() {
 
 // ===== Initialization =====
 async function initApp() {
+  console.log('Init app...');
   // Load user from localStorage
   currentUser = loadFromLS(LS_KEYS.CURRENT_USER, null);
   
@@ -568,6 +591,7 @@ async function initApp() {
   renderUserArea();
   renderProfileSection();
   updateCounters();
+  console.log('App initialized!');
 }
 
 // Start app when DOM is ready
