@@ -40,6 +40,16 @@ def get_movies(genre: Optional[str] = Query(None), sort: str = Query("popular"))
     
     return movies
 
+# IMPORTANT: Special routes BEFORE {movie_id} routes
+
+@router.get("/user/{user_id}/favorites")
+def get_user_favorites(user_id: int):
+    """Get user's favorite movies"""
+    favorites = db.get_user_favorites(user_id)
+    return favorites
+
+# NOW: {movie_id} routes
+
 @router.get("/{movie_id}")
 def get_movie(movie_id: int):
     """Get a single movie by ID"""
@@ -143,9 +153,3 @@ def remove_from_favorites(movie_id: int, user_id: int):
     """Remove a movie from favorites"""
     result = db.remove_favorite(movie_id, user_id)
     return result
-
-@router.get("/user/{user_id}/favorites")
-def get_user_favorites(user_id: int):
-    """Get user's favorite movies"""
-    favorites = db.get_user_favorites(user_id)
-    return favorites
