@@ -213,10 +213,6 @@ function renderFilms() {
           <span>•</span>
           <span>${genre}</span>
         </div>
-        <div class="kv-film-rating-line" id="rating-${m.id}">
-          <span class="kv-film-no-rating">Загрузка...</span>
-        </div>
-        <div class="kv-film-stats" id="stats-${m.id}"></div>
       </div>
     `;
     
@@ -225,46 +221,7 @@ function renderFilms() {
       openMovie(m.id);
     };
     cont.appendChild(card);
-    
-    // Load rating and reviews async
-    loadMovieStatsForCard(m.id);
   });
-}
-
-async function loadMovieStatsForCard(mid) {
-  try {
-    // Получаем рейтинги (оценки) из таблицы ratings
-    const ratingEndpoint = `/movies/${mid}/rating-stats`;
-    let ratingStats = null;
-    
-    try {
-      ratingStats = await apiCall('GET', ratingEndpoint);
-    } catch (e) {
-      console.error('Rating stats error:', e);
-      ratingStats = null;
-    }
-    
-    const ratingEl = $(`#rating-${mid}`);
-    const statsEl = $(`#stats-${mid}`);
-    if (!ratingEl || !statsEl) return;
-    
-    // Отображаем рейтинг (из таблицы ratings, если есть)
-    if (ratingStats && ratingStats.average !== null && ratingStats.count > 0) {
-      const avg = ratingStats.average;
-      const count = ratingStats.count;
-      ratingEl.innerHTML = `
-        <span class="kv-film-rating">${avg.toFixed(1)}</span>
-        <span class="kv-film-rating-count">(${count})</span>
-      `;
-      // Выводим среднее арифметическое
-      statsEl.innerHTML = `⭐ ${avg.toFixed(1)} / 5`;
-    } else {
-      ratingEl.innerHTML = '<span class="kv-film-no-rating">Нет оценок</span>';
-      statsEl.innerHTML = `⭐ нет оценок`;
-    }
-  } catch (e) {
-    console.error('Stats load error:', e);
-  }
 }
 
 // ===== Favorites =====
@@ -323,15 +280,6 @@ async function openMovie(mid) {
   try {
     const movie = await apiCall('GET', `/movies/${mid}`);
     const reviews = await apiCall('GET', `/movies/${mid}/reviews?approved_only=false`);
-    
-    // Получаем рейтинги (оценки пользователей)
-    let ratingStats = null;
-    try {
-      ratingStats = await apiCall('GET', `/movies/${mid}/rating-stats`);
-    } catch (e) {
-      console.error('Rating stats error:', e);
-      ratingStats = null;
-    }
 
     const modal = $('#movieModal');
     const canWrite = currentUser && !currentUser.is_guest;
@@ -342,11 +290,6 @@ async function openMovie(mid) {
     const genre = movie.genre || '';
     const year = movie.year || '';
     const desc = movie.description || 'Нет описания';
-
-    // Используем среднее из рейтингов (если есть)
-    const avgRating = (ratingStats && ratingStats.average !== null) 
-      ? ratingStats.average.toFixed(1)
-      : null;
 
     modal.innerHTML = `
       <div class="kv-modal-backdrop"></div>
@@ -366,12 +309,6 @@ async function openMovie(mid) {
               <span>${genre}</span>
             </div>
             <p class="kv-movie-desc">${desc}</p>
-            <div class="kv-movie-rating-block">
-              <div class="kv-movie-rating-main">
-                <div class="kv-movie-rating-value">${avgRating || '—'}</div>
-                <div class="kv-movie-rating-label">средний рейтинг</div>
-              </div>
-            </div>
             ${canWrite ? `
               <div class="kv-rating-form">
                 <label class="kv-rating-label">Ваша оценка: <span id="ratingValue">не выбрана</span></label>
@@ -451,7 +388,6 @@ async function submitReview(mid) {
     alert('Рецензия отправлена!');
     openMovie(mid);
     updateCounters();
-    loadMovieStatsForCard(mid);
   } catch (e) {
     alert('Ошибка: ' + e.message);
   }
@@ -504,7 +440,7 @@ async function renderProfile() {
       }
     } catch (e) {
       console.error('Favorites load error:', e);
-      favoritesHTML = '<div class="kv-profile-block"><div class="kv-profile-block-title">Избранные фильмы: ошибка загрузки</div></div>';
+      favoritesHTML = '<div class="kv-profile-block"><div class="kv-profile-block-title">Избранные фильмы: ошибка загружки</div></div>';
     }
     
     const roleLabel = currentUser.is_moderator ? ' (Модератор)' : '';
