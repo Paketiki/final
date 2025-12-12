@@ -70,10 +70,10 @@ review_templates = [
 
 def seed_movies_and_reviews():
     """Load all 50 movies with reviews into database"""
-    print("🍋 Лоадинг фильмы и рецензии...")
+    print("\n🍋 Loading movies and reviews...\n")
     
     year_start = 1995
-    movie_ids = []  # для привязки к рецензиям
+    movie_ids = []  # for binding to reviews
     
     for i in range(50):
         base_title = base_titles[i % len(base_titles)]
@@ -112,13 +112,12 @@ def seed_movies_and_reviews():
         
         # Print progress
         if (i + 1) % 10 == 0:
-            print(f"  ✅ {i + 1}/50 фильмов загружено")
+            print(f"  ✅ {i + 1}/50 movies loaded")
     
-    print(f"
-✅ Все данные загружены!")
-    print(f"🍋 50 фильмов")
-    print(f"🗣️ ~260 рецензий")
-    print(f"📁 файл: kinovzor.db")
+    print("\n✅ All data loaded!")
+    print(f"🍋 50 movies")
+    print(f"🗣️ ~260 reviews")
+    print(f"📁 file: kinovzor.db\n")
 
 if __name__ == "__main__":
     seed_movies_and_reviews()
