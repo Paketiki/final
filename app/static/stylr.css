@@ -480,11 +480,10 @@ body {
   flex: 1;
   overflow-y: auto;
   display: grid;
-  /* уменьшаем количество карточек в строке и делаем их больше */
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 12px;
-  justify-items: center; /* центрируем карточки в клетках, чтобы размер был предсказуем */
-  padding: 8px; /* равномерный отступ вокруг карточек */
+  justify-items: center;
+  padding: 8px;
 }
 
 .kv-film-card {
@@ -496,7 +495,6 @@ body {
   flex-direction: column;
   cursor: pointer;
   transition: var(--kv-transition);
-  /* Более крупные и фиксированные размеры карточки, чтобы форма оставалась неизменной */
   width: 220px;
   max-width: 220px;
   min-width: 220px;
@@ -516,7 +514,7 @@ body {
   margin-bottom: 6px;
   background: #050505;
   width: 100%;
-  height: 330px; /* фиксированная высота для стабильной формы (2:3 при ширине 220px) */
+  height: 330px;
 }
 
 .kv-film-poster {
@@ -657,7 +655,7 @@ body {
   overflow: hidden;
   background: #050505;
   width: 180px;
-  height: 270px; /* фиксированная форма 2:3 */
+  height: 270px;
 }
 
 .kv-movie-poster {
@@ -805,11 +803,18 @@ body {
 .kv-review-top {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   margin-bottom: 4px;
 }
 
 .kv-review-author {
   font-weight: 500;
+}
+
+.kv-review-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .kv-review-rating {
@@ -819,6 +824,20 @@ body {
 
 .kv-review-rating-muted {
   color: var(--kv-gray);
+}
+
+.kv-review-delete-btn {
+  background: transparent;
+  border: none;
+  color: #ff6b6b;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0 4px;
+  transition: var(--kv-transition);
+}
+
+.kv-review-delete-btn:hover {
+  color: #ff8888;
 }
 
 .kv-review-text {
