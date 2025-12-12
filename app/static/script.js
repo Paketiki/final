@@ -114,7 +114,16 @@ function logout() {
 // ===== Movies =====
 async function loadMovies() {
   try {
-    allMovies = await apiCall('GET', '/movies/');
+    const data = await apiCall('GET', '/movies/');
+    // Ensure it's always an array
+    if (Array.isArray(data)) {
+      allMovies = data;
+    } else if (data && Array.isArray(data.items)) {
+      allMovies = data.items;
+    } else {
+      allMovies = [];
+      console.error('Unexpected response:', data);
+    }
     renderFilms();
     updateCounters();
   } catch (e) {
@@ -123,6 +132,7 @@ async function loadMovies() {
 }
 
 function getGenres() {
+  if (!Array.isArray(allMovies)) return ['all'];
   const set = new Set(allMovies.map(m => m.genre));
   return ['all', ...Array.from(set).sort()];
 }
@@ -145,7 +155,8 @@ function renderGenres() {
 }
 
 function getFiltered() {
-  let list = allMovies;
+  if (!Array.isArray(allMovies)) return [];
+  let list = [...allMovies];
   if (currentGenre !== 'all') {
     list = list.filter(m => m.genre === currentGenre);
   }
@@ -331,8 +342,8 @@ function renderProfile() {
 function updateCounters() {
   const rc = $('#ratingCount');
   const rwc = $('#reviewCount');
-  if (rc) rc.textContent = allMovies.length;
-  if (rwc) rwc.textContent = allMovies.length;
+  if (rc) rc.textContent = Array.isArray(allMovies) ? allMovies.length : 0;
+  if (rwc) rwc.textContent = Array.isArray(allMovies) ? allMovies.length : 0;
 }
 
 // ===== Init =====
