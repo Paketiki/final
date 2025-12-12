@@ -391,6 +391,13 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: pointer;
+  transition: var(--kv-transition);
+}
+
+.kv-favorite-item:hover {
+  color: var(--kv-orange);
+  border-left-color: var(--kv-orange);
 }
 
 .kv-profile-block-title-row {
@@ -498,7 +505,7 @@ body {
   width: 220px;
   max-width: 220px;
   min-width: 220px;
-  max-height: 440px;
+  max-height: 460px;
   box-sizing: border-box;
 }
 
@@ -588,6 +595,8 @@ body {
 .kv-film-stats {
   font-size: 11px;
   color: var(--kv-text-muted);
+  padding-top: 4px;
+  border-top: 1px solid var(--kv-border);
 }
 
 /* Modal */
