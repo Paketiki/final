@@ -1,10 +1,9 @@
 // ===== API Configuration =====
-const API_BASE = 'http://localhost:8000/api';
+const API_BASE = '/api';
 
 // ===== Local Storage Keys =====
 const LS_KEYS = {
   CURRENT_USER: 'kinovzor_current_user',
-  AUTH_TOKEN: 'kinovzor_auth_token',
 };
 
 // ===== State Management =====
@@ -53,8 +52,8 @@ async function apiCall(method, endpoint, data = null) {
   try {
     const response = await fetch(url, options);
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || 'API Error');
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || `HTTP ${response.status}`);
     }
     return await response.json();
   } catch (error) {
@@ -64,7 +63,16 @@ async function apiCall(method, endpoint, data = null) {
 }
 
 // ===== Auth Functions =====
-async function register(email, password, username) {
+async function register() {
+  const email = $('#registerEmail').value.trim();
+  const password = $('#registerPassword').value.trim();
+  const username = $('#registerUsername').value.trim();
+
+  if (!email || !password || !username) {
+    showError('Пожалуйста, заполните все поля');
+    return;
+  }
+
   try {
     const user = await apiCall('POST', '/users/register', {
       email,
@@ -74,14 +82,26 @@ async function register(email, password, username) {
     currentUser = { ...user, userId: user.id };
     saveToLS(LS_KEYS.CURRENT_USER, currentUser);
     renderUserArea();
+    renderProfileSection();
+    showSuccess('Успешная регистрация! Вставлен в систему.');
+    $('#registerEmail').value = '';
+    $('#registerPassword').value = '';
+    $('#registerUsername').value = '';
     switchToLoginTab();
-    return user;
   } catch (error) {
     showError('Ошибка регистрации: ' + error.message);
   }
 }
 
-async function login(email, password) {
+async function login() {
+  const email = $('#loginEmail').value.trim();
+  const password = $('#loginPassword').value.trim();
+
+  if (!email || !password) {
+    showError('Пожалуйста, введите email и пароль');
+    return;
+  }
+
   try {
     const user = await apiCall('POST', '/users/login', {
       email,
@@ -91,8 +111,9 @@ async function login(email, password) {
     saveToLS(LS_KEYS.CURRENT_USER, currentUser);
     renderUserArea();
     renderProfileSection();
-    renderFilmList();
-    return user;
+    showSuccess('Успешный воход!');
+    $('#loginEmail').value = '';
+    $('#loginPassword').value = '';
   } catch (error) {
     showError('Ошибка входа: ' + error.message);
   }
@@ -103,7 +124,7 @@ function logout() {
   localStorage.removeItem(LS_KEYS.CURRENT_USER);
   renderUserArea();
   renderProfileSection();
-  renderFilmList();
+  showSuccess('Вы вышли из системы');
 }
 
 function loginAsGuest() {
@@ -118,24 +139,25 @@ function loginAsGuest() {
   saveToLS(LS_KEYS.CURRENT_USER, currentUser);
   renderUserArea();
   renderProfileSection();
-  renderFilmList();
+  showSuccess('Вы вошли как гость');
 }
 
 // ===== Movie Functions =====
 async function loadMovies() {
   try {
-    movies = await apiCall('GET', '/');
+    movies = await apiCall('GET', '/movies/');
     renderFilmList();
+    updateCounters();
   } catch (error) {
-    showError('Ошибка загрузки фильмов');
+    showError('Ошибка загрузки фильмов: ' + error.message);
   }
 }
 
 async function getMovieDetails(movieId) {
   try {
-    return await apiCall('GET', `/${movieId}`);
+    return await apiCall('GET', `/movies/${movieId}`);
   } catch (error) {
-    showError('Ошибка загрузки фильма');
+    showError('Ошибка загружки фильма');
     return null;
   }
 }
@@ -149,7 +171,7 @@ function getGenres() {
 function renderGenreFilters() {
   const container = $('#genreFilters');
   if (!container) return;
-  
+
   container.innerHTML = '';
   const genres = getGenres();
   genres.forEach((g) => {
@@ -170,8 +192,7 @@ function sortMovies(list) {
   const arr = [...list];
   switch (currentSort) {
     case 'rating':
-      // Sorting by average rating would require additional data
-      arr.sort((a, b) => (b.id - a.id));
+      arr.sort((a, b) => b.id - a.id);
       break;
     case 'title':
       arr.sort((a, b) => a.title.localeCompare(b.title, 'ru'));
@@ -190,12 +211,17 @@ function sortMovies(list) {
 function renderFilmList() {
   const listEl = $('#filmList');
   if (!listEl) return;
-  
+
   let filtered = movies;
   if (currentGenre !== 'all') {
     filtered = movies.filter((m) => m.genre === currentGenre);
   }
   filtered = sortMovies(filtered);
+
+  if (filtered.length === 0) {
+    listEl.innerHTML = '<div class="kv-empty">Нет фильмов в этой категории</div>';
+    return;
+  }
 
   listEl.innerHTML = '';
   filtered.forEach((movie) => {
@@ -206,14 +232,10 @@ function renderFilmList() {
       openMovieModal(movie.id);
     });
 
-    const isFav = currentUser && currentUser.favorites
-      ? currentUser.favorites.includes(movie.id)
-      : false;
-
     card.innerHTML = `
       <div class="kv-film-poster-wrap">
         <img src="${movie.poster_url || 'https://via.placeholder.com/220x330?text=No+Image'}" alt="${movie.title}" class="kv-film-poster">
-        <button class="kv-fav-btn ${isFav ? 'kv-fav-btn-active' : ''}" data-movie-id="${movie.id}">★</button>
+        <button class="kv-fav-btn" data-movie-id="${movie.id}">\u2605</button>
       </div>
       <div class="kv-film-body">
         <h3 class="kv-film-title">${movie.title}</h3>
@@ -231,43 +253,14 @@ function renderFilmList() {
   $all('.kv-fav-btn').forEach((btn) => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
-      if (!currentUser) {
-        showError('Пожалуйста, авторизуйтесь');
+      if (!currentUser || currentUser.isGuest) {
+        showError('Пожалуйста, авторизуйтесь для добавления в избранное');
         return;
       }
-      const movieId = parseInt(btn.dataset.movieId);
-      toggleFavorite(movieId, btn);
+      // Just toggle visual state for now
+      btn.classList.toggle('kv-fav-btn-active');
     });
   });
-}
-
-async function toggleFavorite(movieId, btn) {
-  if (!currentUser || currentUser.isGuest) {
-    showError('Гости не могут добавлять в избранное');
-    return;
-  }
-
-  try {
-    const isFav = btn.classList.contains('kv-fav-btn-active');
-
-    if (isFav) {
-      await apiCall('DELETE', `/movies/${movieId}/favorites?user_id=${currentUser.userId}`);
-      btn.classList.remove('kv-fav-btn-active');
-      if (currentUser.favorites) {
-        const idx = currentUser.favorites.indexOf(movieId);
-        if (idx !== -1) currentUser.favorites.splice(idx, 1);
-      }
-    } else {
-      await apiCall('POST', `/movies/${movieId}/favorites?user_id=${currentUser.userId}`);
-      btn.classList.add('kv-fav-btn-active');
-      if (!currentUser.favorites) currentUser.favorites = [];
-      currentUser.favorites.push(movieId);
-    }
-
-    saveToLS(LS_KEYS.CURRENT_USER, currentUser);
-  } catch (error) {
-    showError('Ошибка при изменении избранного');
-  }
 }
 
 // ===== Movie Modal Functions =====
@@ -278,18 +271,13 @@ async function openMovieModal(movieId) {
   const modal = $('#movieModal');
   if (!modal) return;
 
-  const isFav = currentUser && currentUser.favorites
-    ? currentUser.favorites.includes(movieId)
-    : false;
-
   const canRate = currentUser && !currentUser.isGuest;
   const canReview = currentUser && !currentUser.isGuest;
-  const isModerator = currentUser && currentUser.is_moderator;
 
   modal.innerHTML = `
     <div class="kv-modal-backdrop"></div>
     <div class="kv-modal-dialog kv-modal-dialog-wide">
-      <button class="kv-modal-close">✕</button>
+      <button class="kv-modal-close">\u2715</button>
       <div class="kv-movie-modal-layout">
         <div class="kv-movie-modal-left">
           <div class="kv-movie-poster-wrap">
@@ -313,7 +301,7 @@ async function openMovieModal(movieId) {
             <div class="kv-rating-form">
               <div class="kv-rating-label">Ваша оценка:</div>
               <div class="kv-rating-stars" id="ratingStars">
-                ${[1, 2, 3, 4, 5].map(i => `<button class="kv-rating-star" data-value="${i}">★</button>`).join('')}
+                ${[1, 2, 3, 4, 5].map(i => `<button class="kv-rating-star" data-value="${i}">\u2605</button>`).join('')}
               </div>
             </div>
           ` : ''}
@@ -330,7 +318,7 @@ async function openMovieModal(movieId) {
           <div class="kv-review-section">
             <div class="kv-review-section-title">Рецензии</div>
             <div class="kv-review-list" id="reviewsList">
-              <div class="kv-empty">Загрузка рецензий...</div>
+              <div class="kv-empty">Загружаю рецензии...</div>
             </div>
           </div>
         </div>
@@ -375,7 +363,6 @@ function closeMovieModal() {
   const modal = $('#movieModal');
   if (modal) {
     modal.classList.remove('kv-modal-open');
-    modal.innerHTML = '';
   }
 }
 
@@ -386,7 +373,7 @@ async function loadMovieReviews(movieId) {
     if (!container) return;
 
     if (reviews.length === 0) {
-      container.innerHTML = '<div class="kv-empty">Рецензий пока нет</div>';
+      container.innerHTML = '<div class="kv-empty">Нет рецензий</div>';
       return;
     }
 
@@ -395,8 +382,8 @@ async function loadMovieReviews(movieId) {
         (r) => `
       <div class="kv-review">
         <div class="kv-review-top">
-          <span class="kv-review-author">Автор #${r.user_id}</span>
-          <span class="kv-review-rating">${r.rating ? r.rating + ' ★' : 'без оценки'}</span>
+          <span class="kv-review-author">Время: ${new Date(r.created_at).toLocaleDateString('ru-RU')}</span>
+          <span class="kv-review-rating">${r.rating ? r.rating + ' \u2605' : ''}</span>
         </div>
         <p class="kv-review-text">${r.text}</p>
       </div>
@@ -431,7 +418,7 @@ async function submitRating(movieId, value) {
       value,
     });
     await loadMovieRating(movieId);
-    showSuccess('Оценка сохранена');
+    showSuccess('Оценка сохранена!');
   } catch (error) {
     showError('Ошибка при сохранении оценки');
   }
@@ -450,7 +437,7 @@ async function submitReview(movieId, text) {
     });
     $('#reviewText').value = '';
     await loadMovieReviews(movieId);
-    showSuccess('Рецензия отправлена на проверку');
+    showSuccess('Рецензия отправлена на проверку!');
   } catch (error) {
     showError('Ошибка при отправке рецензии');
   }
@@ -458,8 +445,6 @@ async function submitReview(movieId, text) {
 
 // ===== UI Rendering Functions =====
 function updateCounters() {
-  // Would need additional API calls to get actual counts
-  // For now, just update based on local data
   const ratingCount = document.querySelector('#ratingCount');
   const reviewCount = document.querySelector('#reviewCount');
   
@@ -505,29 +490,7 @@ function renderProfileSection() {
         <p>Email: ${currentUser.email}</p>
       </div>
     </div>
-    <div class="kv-profile-block">
-      <div class="kv-profile-block-title">Избранные фильмы</div>
-      <div class="kv-collection-list" id="favoritesList">
-        <div class="kv-empty">Нет избранных фильмов</div>
-      </div>
-    </div>
   `;
-
-  if (currentUser.favorites && currentUser.favorites.length > 0) {
-    const favoritesList = $('#favoritesList');
-    const favMovies = movies.filter((m) => currentUser.favorites.includes(m.id));
-    favoritesList.innerHTML = favMovies
-      .map(
-        (m) => `
-      <div class="kv-collection" style="cursor: pointer;" onclick="openMovieModal(${m.id})">
-        <div class="kv-collection-header">
-          <span class="kv-collection-title">${m.title}</span>
-        </div>
-      </div>
-    `
-      )
-      .join('');
-  }
 }
 
 // ===== Utility Functions =====
@@ -544,8 +507,8 @@ function switchToLoginTab() {
   const panels = $all('.kv-auth-panel');
   tabs.forEach((t) => t.classList.remove('kv-auth-tab-active'));
   panels.forEach((p) => p.classList.remove('kv-auth-panel-active'));
-  tabs[0].classList.add('kv-auth-tab-active');
-  panels[0].classList.add('kv-auth-panel-active');
+  if (tabs[0]) tabs[0].classList.add('kv-auth-tab-active');
+  if (panels[0]) panels[0].classList.add('kv-auth-panel-active');
 }
 
 // ===== Event Listeners Setup =====
@@ -559,41 +522,20 @@ function setupEventListeners() {
       authTabs.forEach((t) => t.classList.remove('kv-auth-tab-active'));
       authPanels.forEach((p) => p.classList.remove('kv-auth-panel-active'));
       tab.classList.add('kv-auth-tab-active');
-      authPanels[idx].classList.add('kv-auth-panel-active');
+      if (authPanels[idx]) authPanels[idx].classList.add('kv-auth-panel-active');
     });
   });
 
   // Register button
   const registerBtn = $('#registerBtn');
   if (registerBtn) {
-    registerBtn.addEventListener('click', async () => {
-      const email = $('#registerEmail').value.trim();
-      const password = $('#registerPassword').value.trim();
-      const username = $('#registerUsername').value.trim();
-
-      if (!email || !password || !username) {
-        showError('Пожалуйста, заполните все поля');
-        return;
-      }
-
-      await register(email, password, username);
-    });
+    registerBtn.addEventListener('click', register);
   }
 
   // Login button
   const loginBtn = $('#loginBtn');
   if (loginBtn) {
-    loginBtn.addEventListener('click', async () => {
-      const email = $('#loginEmail').value.trim();
-      const password = $('#loginPassword').value.trim();
-
-      if (!email || !password) {
-        showError('Пожалуйста, заполните все поля');
-        return;
-      }
-
-      await login(email, password);
-    });
+    loginBtn.addEventListener('click', login);
   }
 
   // Guest login button
@@ -617,98 +559,10 @@ async function initApp() {
   // Load user from localStorage
   currentUser = loadFromLS(LS_KEYS.CURRENT_USER, null);
   
-  // Create main HTML structure
-  const app = $('#app');
-  if (!app) return;
-
-  app.innerHTML = `
-    <header class="kv-header">
-      <div class="kv-logo">Кино<span>Взор</span></div>
-      <div class="kv-header-center">
-        <div class="kv-counters">
-          <div class="kv-counter">
-            <span class="kv-counter-label">Фильмов</span>
-            <span class="kv-counter-value" id="ratingCount">0</span>
-          </div>
-          <div class="kv-counter">
-            <span class="kv-counter-label">Рецензий</span>
-            <span class="kv-counter-value" id="reviewCount">0</span>
-          </div>
-        </div>
-      </div>
-      <div class="kv-user-area" id="userArea"></div>
-    </header>
-    <div class="kv-main">
-      <div class="kv-sidebar">
-        <div class="kv-auth" id="authSection">
-          <div class="kv-auth-tabs">
-            <button class="kv-auth-tab kv-auth-tab-active">Вход</button>
-            <button class="kv-auth-tab">Регистрация</button>
-            <button class="kv-auth-tab">Гость</button>
-          </div>
-          <div class="kv-auth-panel kv-auth-panel-active">
-            <form class="kv-form">
-              <label>
-                <span>Email</span>
-                <input type="email" id="loginEmail" placeholder="вход@пример.ру">
-              </label>
-              <label>
-                <span>Пароль</span>
-                <input type="password" id="loginPassword" placeholder="••••••••">
-              </label>
-              <button type="button" class="kv-btn kv-btn-primary" id="loginBtn">Войти</button>
-            </form>
-          </div>
-          <div class="kv-auth-panel">
-            <form class="kv-form">
-              <label>
-                <span>Email</span>
-                <input type="email" id="registerEmail" placeholder="регистрация@пример.ру">
-              </label>
-              <label>
-                <span>Имя пользователя</span>
-                <input type="text" id="registerUsername" placeholder="ваше имя">
-              </label>
-              <label>
-                <span>Пароль</span>
-                <input type="password" id="registerPassword" placeholder="••••••••">
-              </label>
-              <button type="button" class="kv-btn kv-btn-primary" id="registerBtn">Зарегистрироваться</button>
-            </form>
-          </div>
-          <div class="kv-auth-panel">
-            <p style="font-size: 12px; color: var(--kv-text-muted); margin-bottom: 8px;">
-              Продолжить как гость, чтобы просмотреть фильмы (без возможности оставлять оценки и рецензии)
-            </p>
-            <button class="kv-btn kv-btn-primary" id="guestBtn">Продолжить как гость</button>
-          </div>
-        </div>
-        <div class="kv-filters">
-          <h2>Жанры</h2>
-          <div class="kv-genre-list" id="genreFilters"></div>
-        </div>
-        <div class="kv-profile" id="profileSection"></div>
-      </div>
-      <div class="kv-content">
-        <div class="kv-film-list-header">
-          <h1>Фильмы</h1>
-          <select class="kv-select" id="sortSelect">
-            <option value="popular">По популярности</option>
-            <option value="rating">По рейтингу</option>
-            <option value="title">По названию</option>
-            <option value="year">По году</option>
-          </select>
-        </div>
-        <div class="kv-film-list" id="filmList"></div>
-      </div>
-    </div>
-    <div class="kv-modal" id="movieModal"></div>
-  `;
-
   // Setup event listeners
   setupEventListeners();
 
-  // Load initial data
+  // Load movies
   await loadMovies();
   renderGenreFilters();
   renderUserArea();
