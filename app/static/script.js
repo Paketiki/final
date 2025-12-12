@@ -12,6 +12,7 @@ let currentGenre = 'all';
 let currentSort = 'popular';
 let allMovies = [];
 let currentMovieRating = null; // Track current rating in modal
+let currentMovieId = null; // Track current movie in modal
 
 // ===== Utilities =====
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -290,9 +291,30 @@ async function toggleFavorite(event, movieId) {
   }
 }
 
+// ===== Review Management =====
+async function deleteReview(reviewId, movieId) {
+  if (!currentUser || !currentUser.is_moderator) {
+    return alert('Только модератор может удалять рецензии');
+  }
+  
+  if (!confirm('Вы уверены, что хотите удалить эту рецензию?')) {
+    return;
+  }
+  
+  try {
+    await apiCall('DELETE', `/movies/reviews/${reviewId}`);
+    alert('Рецензия удалена');
+    openMovie(movieId);
+    updateCounters();
+  } catch (e) {
+    alert('Ошибка: ' + e.message);
+  }
+}
+
 // ===== Modal =====
 async function openMovie(mid) {
   currentMovieRating = null; // Reset rating
+  currentMovieId = mid; // Store current movie id
   
   try {
     const movie = await apiCall('GET', `/movies/${mid}`);
@@ -300,6 +322,7 @@ async function openMovie(mid) {
 
     const modal = $('#movieModal');
     const canWrite = currentUser && !currentUser.is_guest;
+    const isModerator = currentUser && currentUser.is_moderator;
 
     const posterUrl = movie.poster_url || '';
     const title = movie.title || 'Без названия';
@@ -361,7 +384,10 @@ async function openMovie(mid) {
                   <div class="kv-review">
                     <div class="kv-review-top">
                       <span class="kv-review-author">${r.username ? r.username : 'Гость'}</span>
-                      ${r.rating ? `<span class="kv-review-rating">${r.rating} ★</span>` : ''}
+                      <div class="kv-review-actions">
+                        ${r.rating ? `<span class="kv-review-rating">${r.rating} ★</span>` : ''}
+                        ${isModerator ? `<button class="kv-review-delete-btn" onclick="deleteReview(${r.id}, ${mid})">x</button>` : ''}
+                      </div>
                     </div>
                     <p class="kv-review-text">${r.text}</p>
                   </div>
@@ -426,9 +452,10 @@ function renderUserArea() {
   if (!area) return;
 
   if (currentUser) {
+    const roleLabel = currentUser.is_moderator ? ' (Модератор)' : '';
     area.innerHTML = `
       <div class="kv-user-info">
-        <div class="kv-user-name">${currentUser.username}</div>
+        <div class="kv-user-name">${currentUser.username}${roleLabel}</div>
       </div>
       <button class="kv-icon-btn" onclick="logout()">Выход</button>
     `;
@@ -469,10 +496,11 @@ async function renderProfile() {
       favoritesHTML = '<div class="kv-profile-block"><div class="kv-profile-block-title">Избранные фильмы: ошибка загрузки</div></div>';
     }
     
+    const roleLabel = currentUser.is_moderator ? ' (Модератор)' : '';
     prof.innerHTML = `
       <h2>Профиль</h2>
       <div class="kv-profile-block">
-        <div class="kv-profile-block-title">Ник: ${currentUser.username}</div>
+        <div class="kv-profile-block-title">Ник: ${currentUser.username}${roleLabel}</div>
         <div class="kv-profile-block-title">Почта: ${currentUser.email}</div>
       </div>
       ${favoritesHTML}
