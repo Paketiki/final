@@ -368,7 +368,7 @@ async function openMovie(mid) {
               <div class="kv-rating-form">
                 <label class="kv-rating-label">Ваша оценка: <span id="ratingValue">не выбрана</span></label>
                 <div class="kv-rating-stars">
-                  ${[1,2,3,4,5].map(i => `<button class="kv-rating-star" data-val="${i}">★</button>`).join('')}
+                  ${[1,2,3,4,5].map(i => `<button class="kv-rating-star" data-val="${i}"★</button>`).join('')}
                 </div>
               </div>
             ` : ''}
@@ -467,6 +467,18 @@ function renderUserArea() {
   }
 }
 
+async function removeFavorite(movieId) {
+  if (!currentUser) return;
+  
+  try {
+    await apiCall('DELETE', `/movies/${movieId}/favorites?user_id=${currentUser.id}`);
+    renderProfile();
+    renderFilms(); // Обновим звёзды на карточках
+  } catch (e) {
+    alert('Ошибка: ' + e.message);
+  }
+}
+
 async function renderProfile() {
   const prof = $('#profileSection');
   if (!prof) return;
@@ -483,7 +495,12 @@ async function renderProfile() {
           <div class="kv-profile-block">
             <div class="kv-profile-block-title">Избранные фильмы:</div>
             <div class="kv-favorites-list">
-              ${favorites.map(f => `<div class="kv-favorite-item" onclick="openMovie(${f.id})" title="Кликни для открытия статистики">• ${f.title}</div>`).join('')}
+              ${favorites.map(f => `
+                <div class="kv-favorite-item" style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="cursor: pointer; flex: 1;" onclick="openMovie(${f.id})" title="Кликни для открытия">• ${f.title}</span>
+                  <button style="background: none; border: none; color: var(--kv-orange); cursor: pointer; font-size: 12px; padding: 0 4px;" onclick="removeFavorite(${f.id})" title="Удалить из избранного">✕</button>
+                </div>
+              `).join('')}
             </div>
           </div>
         `;
