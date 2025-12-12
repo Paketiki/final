@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, EmailStr
 from app import db
+import json
 
 router = APIRouter(prefix="/api/users", tags=["users"])
 
@@ -27,10 +28,15 @@ def register(data: UserRegister):
 @router.post("/login")
 def login(data: UserLogin):
     """Login user by username"""
+    print(f"Login attempt with: {json.dumps({'username': data.username, 'password': '***'})}")
+    
     # Get user by username
     user = db.get_user_by_username(data.username)
     
-    if not user or user['password'] != data.password:
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    if user['password'] != data.password:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
     return user
