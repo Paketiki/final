@@ -254,9 +254,11 @@ async function loadMovieStatsForCard(mid) {
       ratingEl.innerHTML = '<span class="kv-film-no-rating">Нет оценок</span>';
     }
     
-    // Reviews count
+    // Reviews count - ныне отображаем кол-во рецензий
     if (reviews.length > 0) {
-      statsEl.innerHTML = `Рецензий: ${reviews.length}`;
+      statsEl.innerHTML = `🗣 ${reviews.length} рецензий`;
+    } else {
+      statsEl.innerHTML = `🗣 нет рецензий`;
     }
   } catch (e) {
     console.error('Stats load error:', e);
@@ -480,7 +482,7 @@ async function renderProfile() {
           <div class="kv-profile-block">
             <div class="kv-profile-block-title">Избранные фильмы:</div>
             <div class="kv-favorites-list">
-              ${favorites.map(f => `<div class="kv-favorite-item">• ${f.title}</div>`).join('')}
+              ${favorites.map(f => `<div class="kv-favorite-item" onclick="openMovie(${f.id})" title="Кликни для открытия статистики">• ${f.title}</div>`).join('')}
             </div>
           </div>
         `;
@@ -493,7 +495,7 @@ async function renderProfile() {
       }
     } catch (e) {
       console.error('Favorites load error:', e);
-      favoritesHTML = '<div class="kv-profile-block"><div class="kv-profile-block-title">Избранные фильмы: ошибка загрузки</div></div>';
+      favoritesHTML = '<div class="kv-profile-block"><div class="kv-profile-block-title">Избранные фильмы: ошибка загружки</div></div>';
     }
     
     const roleLabel = currentUser.is_moderator ? ' (Модератор)' : '';
