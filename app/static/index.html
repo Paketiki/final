@@ -33,7 +33,7 @@
         <!-- Auth Section -->
         <section class="kv-auth" id="authSection">
           <div class="kv-auth-tabs">
-            <button class="kv-auth-tab kv-auth-tab-active" data-tab="0">Воход</button>
+            <button class="kv-auth-tab kv-auth-tab-active" data-tab="0">Вход</button>
             <button class="kv-auth-tab" data-tab="1">Регистрация</button>
             <button class="kv-auth-tab" data-tab="2">Гость</button>
           </div>
@@ -42,8 +42,8 @@
           <div class="kv-auth-panel kv-auth-panel-active">
             <form class="kv-form" onsubmit="return false;">
               <label>
-                <span>Почта</span>
-                <input type="email" id="loginEmail" placeholder="test@example.com" />
+                <span>Никнейм</span>
+                <input type="text" id="loginUsername" placeholder="Ваш никнейм" />
               </label>
               <label>
                 <span>Пароль</span>
@@ -61,20 +61,20 @@
                 <input type="email" id="registerEmail" placeholder="test@example.com" />
               </label>
               <label>
-                <span>Мня зовут</span>
-                <input type="text" id="registerUsername" placeholder="Никнейм" />
+                <span>Никнейм</span>
+                <input type="text" id="registerUsername" placeholder="Ваш никнейм" />
               </label>
               <label>
                 <span>Пароль</span>
                 <input type="password" id="registerPassword" placeholder="••••••••" />
               </label>
-              <button type="button" class="kv-btn kv-btn-primary" id="registerBtn" style="width: 100%;">Определить</button>
+              <button type="button" class="kv-btn kv-btn-primary" id="registerBtn" style="width: 100%;">Зарегистрироваться</button>
             </form>
           </div>
 
           <!-- Guest Panel -->
           <div class="kv-auth-panel">
-            <p style="font-size: 12px; margin-bottom: 8px; color: var(--kv-text-muted);">Если входите как гость - сможете читать рецензии, но не снисать.</p>
+            <p style="font-size: 12px; margin-bottom: 8px; color: var(--kv-text-muted);">Если входите как гость - сможете читать рецензии, но не писать.</p>
             <button type="button" class="kv-btn kv-btn-secondary" id="guestBtn" style="width: 100%;">Продолжить как гость</button>
           </div>
         </section>
