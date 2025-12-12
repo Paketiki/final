@@ -204,19 +204,15 @@ function renderFilms() {
     card.innerHTML = `
       <div class="kv-film-poster-wrap">
         <img src="${posterUrl}" alt="${title}" class="kv-film-poster">
-        <button class="kv-fav-btn" onclick="toggleFavorite(event, ${m.id})">☆</button>
+        <button class="kv-fav-btn" onclick="toggleFavorite(event, ${m.id})">\u2606</button>
       </div>
       <div class="kv-film-body">
         <h3 class="kv-film-title">${title}</h3>
         <div class="kv-film-meta">
           <span>${year}</span>
-          <span>•</span>
+          <span>\u2022</span>
           <span>${genre}</span>
         </div>
-        <div class="kv-film-rating-line" id="rating-${m.id}">
-          <span class="kv-film-no-rating">Загружка...</span>
-        </div>
-        <div class="kv-film-stats" id="stats-${m.id}"></div>
       </div>
     `;
     
@@ -225,38 +221,7 @@ function renderFilms() {
       openMovie(m.id);
     };
     cont.appendChild(card);
-    
-    // Load rating and reviews async
-    loadMovieStatsForCard(m.id);
   });
-}
-
-async function loadMovieStatsForCard(mid) {
-  try {
-    // Получаем рейтинги из таблицы ratings
-    const ratingStats = await apiCall('GET', `/movies/${mid}/rating-stats`);
-    
-    const ratingEl = $(`#rating-${mid}`);
-    const statsEl = $(`#stats-${mid}`);
-    if (!ratingEl || !statsEl) return;
-    
-    // Отображаем рейтинг из таблицы ratings
-    if (ratingStats && ratingStats.average !== null && ratingStats.count > 0) {
-      const avg = ratingStats.average;
-      const count = ratingStats.count;
-      ratingEl.innerHTML = `
-        <span class="kv-film-rating">${avg.toFixed(1)}</span>
-        <span class="kv-film-rating-count">(${count})</span>
-      `;
-      // Выводим среднее арифметическое ниже
-      statsEl.innerHTML = `⭐ ${avg.toFixed(1)} / 5`;
-    } else {
-      ratingEl.innerHTML = '<span class="kv-film-no-rating">Нет оценок</span>';
-      statsEl.innerHTML = `⭐ нет оценок`;
-    }
-  } catch (e) {
-    console.error('Stats load error:', e);
-  }
 }
 
 // ===== Favorites =====
@@ -274,11 +239,11 @@ async function toggleFavorite(event, movieId) {
     if (isFavorite) {
       await apiCall('DELETE', `/movies/${movieId}/favorites?user_id=${currentUser.id}`);
       button.classList.remove('kv-fav-btn-active');
-      button.textContent = '☆';
+      button.textContent = '\u2606';
     } else {
       await apiCall('POST', `/movies/${movieId}/favorites?user_id=${currentUser.id}`);
       button.classList.add('kv-fav-btn-active');
-      button.textContent = '★';
+      button.textContent = '\u2605';
     }
     
     renderProfile();
@@ -293,7 +258,7 @@ async function deleteReview(reviewId, movieId) {
     return alert('Только модератор может удалять рецензии');
   }
   
-  if (!confirm('Вы уверены, что хотите удалить эту рецензию?')) {
+  if (!confirm('Вы уверены, что хотите удалить эту рецензию?') ) {
     return;
   }
   
@@ -343,7 +308,7 @@ async function openMovie(mid) {
     modal.innerHTML = `
       <div class="kv-modal-backdrop"></div>
       <div class="kv-modal-dialog kv-modal-dialog-wide">
-        <button class="kv-modal-close">✕</button>
+        <button class="kv-modal-close">\u2715</button>
         <div class="kv-movie-modal-layout">
           <div class="kv-movie-modal-left">
             <div class="kv-movie-poster-wrap">
@@ -354,13 +319,13 @@ async function openMovie(mid) {
             <h2>${title}</h2>
             <div class="kv-movie-meta">
               <span>${year}</span>
-              <span>•</span>
+              <span>\u2022</span>
               <span>${genre}</span>
             </div>
             <p class="kv-movie-desc">${desc}</p>
             <div class="kv-movie-rating-block">
               <div class="kv-movie-rating-main">
-                <div class="kv-movie-rating-value">${avgRating || '—'}</div>
+                <div class="kv-movie-rating-value">${avgRating || '\u2014'}</div>
                 <div class="kv-movie-rating-label">средний рейтинг</div>
               </div>
             </div>
@@ -368,7 +333,7 @@ async function openMovie(mid) {
               <div class="kv-rating-form">
                 <label class="kv-rating-label">Ваша оценка: <span id="ratingValue">не выбрана</span></label>
                 <div class="kv-rating-stars">
-                  ${[1,2,3,4,5].map(i => `<button class="kv-rating-star" data-val="${i}"★</button>`).join('')}
+                  ${[1,2,3,4,5].map(i => `<button class="kv-rating-star" data-val="${i}">\u2605</button>`).join('')}
                 </div>
               </div>
             ` : ''}
@@ -385,9 +350,9 @@ async function openMovie(mid) {
                 ${!reviews.length ? '<div class="kv-empty">Нет рецензий</div>' : reviews.map(r => `
                   <div class="kv-review">
                     <div class="kv-review-top">
-                      <span class="kv-review-author">${r.username ? r.username : 'Гость'}</span>
-                      <div class="kv-review-actions">
-                        ${r.rating ? `<span class="kv-review-rating">${r.rating} ★</span>` : ''}
+                      <div class="kv-review-header">
+                        <strong class="kv-review-author">\u2728 ${r.username ? r.username : 'Гость'}</strong>
+                        ${r.rating ? `<span class="kv-review-rating">${r.rating} \u2605</span>` : ''}
                         ${isModerator ? `<button class="kv-review-delete-btn" onclick="deleteReview(${r.id}, ${mid})">x</button>` : ''}
                       </div>
                     </div>
@@ -443,7 +408,6 @@ async function submitReview(mid) {
     alert('Рецензия отправлена!');
     openMovie(mid);
     updateCounters();
-    loadMovieStatsForCard(mid);
   } catch (e) {
     alert('Ошибка: ' + e.message);
   }
@@ -498,7 +462,7 @@ async function renderProfile() {
               ${favorites.map(f => `
                 <div class="kv-favorite-item" style="display: flex; justify-content: space-between; align-items: center;">
                   <span style="cursor: pointer; flex: 1;" onclick="openMovie(${f.id})" title="Кликни для открытия">• ${f.title}</span>
-                  <button style="background: none; border: none; color: var(--kv-orange); cursor: pointer; font-size: 12px; padding: 0 4px;" onclick="removeFavorite(${f.id})" title="Удалить из избранного">✕</button>
+                  <button style="background: none; border: none; color: var(--kv-orange); cursor: pointer; font-size: 12px; padding: 0 4px;" onclick="removeFavorite(${f.id})" title="Удалить из избранного">\u2715</button>
                 </div>
               `).join('')}
             </div>
