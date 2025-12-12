@@ -7,7 +7,6 @@ Create Date: 2025-12-12
 """
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 
 
 revision = '001'
@@ -24,15 +23,14 @@ def upgrade() -> None:
         sa.Column('email', sa.String(), nullable=False),
         sa.Column('password', sa.String(), nullable=False),
         sa.Column('username', sa.String(), nullable=False),
-        sa.Column('is_user', sa.Boolean(), server_default=sa.text('true'), nullable=False),
-        sa.Column('is_moderator', sa.Boolean(), server_default=sa.text('false'), nullable=False),
-        sa.Column('is_admin', sa.Boolean(), server_default=sa.text('false'), nullable=False),
+        sa.Column('is_user', sa.Boolean(), server_default=sa.true(), nullable=False),
+        sa.Column('is_moderator', sa.Boolean(), server_default=sa.false(), nullable=False),
+        sa.Column('is_admin', sa.Boolean(), server_default=sa.false(), nullable=False),
         sa.Column('created_at', sa.DateTime(), server_default=sa.func.now(), nullable=True),
         sa.Column('updated_at', sa.DateTime(), server_default=sa.func.now(), nullable=True),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('email')
     )
-    op.create_index(op.f('ix_users_email'), 'users', ['email'], unique=True)
 
     # Create movies table
     op.create_table(
@@ -56,7 +54,7 @@ def upgrade() -> None:
         sa.Column('user_id', sa.Integer(), nullable=False),
         sa.Column('text', sa.Text(), nullable=False),
         sa.Column('rating', sa.Integer(), nullable=True),
-        sa.Column('approved', sa.Boolean(), server_default=sa.text('false'), nullable=False),
+        sa.Column('approved', sa.Boolean(), server_default=sa.false(), nullable=False),
         sa.Column('created_at', sa.DateTime(), server_default=sa.func.now(), nullable=True),
         sa.Column('updated_at', sa.DateTime(), server_default=sa.func.now(), nullable=True),
         sa.ForeignKeyConstraint(['movie_id'], ['movies.id'], ),
@@ -97,5 +95,4 @@ def downgrade() -> None:
     op.drop_table('ratings')
     op.drop_table('reviews')
     op.drop_table('movies')
-    op.drop_index(op.f('ix_users_email'), table_name='users')
     op.drop_table('users')
