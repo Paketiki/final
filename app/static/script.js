@@ -233,32 +233,33 @@ function renderFilms() {
 
 async function loadMovieStatsForCard(mid) {
   try {
-    const reviews = await apiCall('GET', `/movies/${mid}/reviews`);
+    // Получаем рейтинги (оценки) из таблицы ratings
+    const ratingEndpoint = `/movies/${mid}/rating-stats`;
+    let ratingStats = null;
+    
+    try {
+      ratingStats = await apiCall('GET', ratingEndpoint);
+    } catch (e) {
+      console.error('Rating stats error:', e);
+      ratingStats = null;
+    }
     
     const ratingEl = $(`#rating-${mid}`);
     const statsEl = $(`#stats-${mid}`);
     if (!ratingEl || !statsEl) return;
     
-    // Вычислить средний рейтинг из рецензий
-    const ratings = reviews
-      .filter(r => r.rating)
-      .map(r => r.rating);
-    
-    if (ratings.length > 0) {
-      const avg = ratings.reduce((sum, r) => sum + r, 0) / ratings.length;
+    // Отображаем рейтинг (из таблицы ratings, если есть)
+    if (ratingStats && ratingStats.average !== null && ratingStats.count > 0) {
+      const avg = ratingStats.average;
+      const count = ratingStats.count;
       ratingEl.innerHTML = `
         <span class="kv-film-rating">${avg.toFixed(1)}</span>
-        <span class="kv-film-rating-count">(${ratings.length})</span>
+        <span class="kv-film-rating-count">(${count})</span>
       `;
-    } else {
-      ratingEl.innerHTML = '<span class="kv-film-no-rating">Нет оценок</span>';
-    }
-    
-    // Показываем среднее арифметическое оценок внизу
-    if (ratings.length > 0) {
-      const avg = ratings.reduce((sum, r) => sum + r, 0) / ratings.length;
+      // Выводим среднее арифметическое
       statsEl.innerHTML = `⭐ ${avg.toFixed(1)} / 5`;
     } else {
+      ratingEl.innerHTML = '<span class="kv-film-no-rating">Нет оценок</span>';
       statsEl.innerHTML = `⭐ нет оценок`;
     }
   } catch (e) {
@@ -322,6 +323,15 @@ async function openMovie(mid) {
   try {
     const movie = await apiCall('GET', `/movies/${mid}`);
     const reviews = await apiCall('GET', `/movies/${mid}/reviews?approved_only=false`);
+    
+    // Получаем рейтинги (оценки пользователей)
+    let ratingStats = null;
+    try {
+      ratingStats = await apiCall('GET', `/movies/${mid}/rating-stats`);
+    } catch (e) {
+      console.error('Rating stats error:', e);
+      ratingStats = null;
+    }
 
     const modal = $('#movieModal');
     const canWrite = currentUser && !currentUser.is_guest;
@@ -333,12 +343,9 @@ async function openMovie(mid) {
     const year = movie.year || '';
     const desc = movie.description || 'Нет описания';
 
-    // Вычислить средний рейтинг из рецензий
-    const ratings = reviews
-      .filter(r => r.rating)
-      .map(r => r.rating);
-    const avgRating = ratings.length > 0 
-      ? (ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(1)
+    // Используем среднее из рейтингов (если есть)
+    const avgRating = (ratingStats && ratingStats.average !== null) 
+      ? ratingStats.average.toFixed(1)
       : null;
 
     modal.innerHTML = `
@@ -444,6 +451,7 @@ async function submitReview(mid) {
     alert('Рецензия отправлена!');
     openMovie(mid);
     updateCounters();
+    loadMovieStatsForCard(mid);
   } catch (e) {
     alert('Ошибка: ' + e.message);
   }
