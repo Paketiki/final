@@ -44,12 +44,12 @@ def init_db():
     )
     """)
     
-    # Reviews table
+    # Reviews table - user_id is nullable now
     cursor.execute("""
     CREATE TABLE reviews (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         movie_id INTEGER NOT NULL,
-        user_id INTEGER NOT NULL,
+        user_id INTEGER,
         text TEXT NOT NULL,
         rating INTEGER,
         approved BOOLEAN DEFAULT 0,
